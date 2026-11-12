@@ -220,9 +220,11 @@ function renderPrivacyNote() {
 
   privacyNote.textContent = state.config.privacy?.aiEnabled
     ? "你可以匿名来，这段对话不会公开展示；如果站点启用了在线 AI，内容会发送到管理员配置的模型接口，并保存在这台电脑的本地私有目录里。"
-    : "你可以匿名来，这段对话不会公开展示；当前主要保存在这台电脑的本地私有目录里。";
+    : "这段对话保存在站点的私有目录里，其他访客看不到。";
   if (hasCompleteUserApiConfig(state.userApi)) {
-    privacyNote.textContent += " 当前聊天会优先使用你在“我的 API”里保存的本机配置。";
+    privacyNote.textContent = "聊天会发送到你在「我的 API」里选择的模型服务，也会保存在站点的私有目录里。";
+  } else if (!state.config.privacy?.aiEnabled) {
+    privacyNote.textContent += " 想用在线模型，可以在「我的 API」里填自己的密钥。";
   }
 }
 
@@ -240,7 +242,7 @@ function renderActiveApiIndicator() {
     activeApiIndicator.textContent = "当前使用：站点默认 API";
     return;
   }
-  activeApiIndicator.textContent = "当前使用：站点本地模式";
+  activeApiIndicator.textContent = "当前使用：本地规则回复";
 }
 
 function refreshUserApiState() {

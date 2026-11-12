@@ -16,7 +16,7 @@ function applyConfig(config) {
   document.getElementById("footerNote").textContent = config.site.footerNote;
   document.getElementById("privacyAiNote").textContent = config.privacy?.aiEnabled
     ? "当前站点已经启用在线 AI。你的内容会发送到管理员配置的模型接口，但不会在前台公开展示。"
-    : "当前站点主要在这台电脑的本地私有目录里处理和保存，不会在前台公开展示。";
+    : "站点默认使用本地规则回复。启用「我的 API」后，聊天也会发送给你选择的模型服务。聊天记录保存在站点的私有目录里。";
 }
 
 function clearLocalTrace() {

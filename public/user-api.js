@@ -67,8 +67,8 @@ function renderActiveStatus(config = null) {
     return;
   }
 
-  title.textContent = "当前会使用站点本地模式。";
-  text.textContent = "你没有启用自己的本机 API，站点默认也没有开启在线接口，所以会使用站点本地回复。";
+  title.textContent = "当前使用本地规则回复。";
+  text.textContent = "想用在线模型，请选一个模型预设，填入你自己的 API Key，再测试并保存。";
   badge.textContent = "使用本地模式";
 }
 
