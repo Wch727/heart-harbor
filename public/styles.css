@@ -1997,6 +1997,13 @@ select {
   }
 }
 
+.chat-shell button:disabled,
+.site-header button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
+}
+
 .home-page {
   --max-width: 1120px;
   --text: #183832;

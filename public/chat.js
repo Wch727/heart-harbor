@@ -6,6 +6,9 @@ const USER_API_STORAGE_KEY = "companion-user-api-config";
 const chatFeed = document.getElementById("chatFeed");
 const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendBtn");
+const resetButton = document.getElementById("resetConversationBtn");
+const clearButton = document.getElementById("clearLocalTraceBtn");
 const nicknameInput = document.getElementById("nicknameInput");
 const chatStatus = document.getElementById("chatStatus");
 const matchedResources = document.getElementById("matchedResources");
@@ -28,7 +31,7 @@ const supportModeMeta = {
     emptyText: "不用讲完整，也不用急着讲明白。你先说，我跟着你。",
     hint: "适合想先被听见的时候。",
     sceneNote: "这会儿我们先不急着分析，先把你接住。",
-    composerNote: "短短一句也可以。比如 “我今天真的有点撑不住了”。"
+    composerNote: "写一两句也可以。"
   },
   sort: {
     label: "帮我理清",
@@ -133,12 +136,8 @@ function renderEmptyState() {
   `;
 
   chatFeed.querySelectorAll("[data-inline-starter]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const starter = button.dataset.inlineStarter || "";
-      if (!starter) return;
-      messageInput.value = starter;
-      await sendMessage(starter);
-      messageInput.value = "";
+    button.addEventListener("click", () => {
+      sendStarter(button.dataset.inlineStarter);
     });
   });
 }
@@ -292,9 +291,22 @@ async function loadHistory() {
   }
 }
 
-async function sendMessage(message) {
-  if (!message.trim()) return;
+function setSending(sending) {
+  sendButton.disabled = sending;
+  resetButton.disabled = sending;
+  clearButton.disabled = sending;
+  chatForm.setAttribute("aria-busy", String(sending));
+  document.querySelectorAll(".starter-btn, [data-inline-starter], [data-support-mode]").forEach((button) => {
+    button.disabled = sending;
+  });
+}
 
+async function sendMessage() {
+  const draft = messageInput.value;
+  const message = draft.trim();
+  if (!message || sendButton.disabled) return;
+
+  setSending(true);
   try {
     setInlineStatus(chatStatus, "正在等回复…", "info");
     const payload = await api("/api/chat/message", {
@@ -308,6 +320,7 @@ async function sendMessage(message) {
       }
     });
 
+    if (messageInput.value === draft) messageInput.value = "";
     state.conversationId = payload.conversationId;
     state.conversation = payload.conversation;
     if (state.conversation?.supportMode) setSupportMode(state.conversation.supportMode, { silent: true });
@@ -322,17 +335,27 @@ async function sendMessage(message) {
       payload.analysis.isCrisis ? "error" : "success"
     );
   } catch (error) {
-    setInlineStatus(chatStatus, error.message, "error");
+    const message = error instanceof TypeError ? "暂时连不上。草稿还在，可以等会儿再发。" : error.message;
+    setInlineStatus(chatStatus, message, "error");
+  } finally {
+    setSending(false);
   }
+}
+
+function sendStarter(starter) {
+  if (!starter || sendButton.disabled) return;
+  if (messageInput.value.trim()) {
+    messageInput.focus();
+    return;
+  }
+  messageInput.value = starter;
+  void sendMessage();
 }
 
 function bindStarters() {
   document.querySelectorAll(".starter-btn").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const starter = button.dataset.starter || "";
-      messageInput.value = starter;
-      await sendMessage(starter);
-      messageInput.value = "";
+    button.addEventListener("click", () => {
+      sendStarter(button.dataset.starter);
     });
   });
 }
@@ -382,15 +405,12 @@ async function init() {
   setSupportMode(modeFromQuery || storedMode || "listen", { silent: true });
   bindStarters();
   bindSupportModes();
-  document.getElementById("resetConversationBtn").addEventListener("click", resetConversation);
-  document.getElementById("clearLocalTraceBtn").addEventListener("click", clearLocalTrace);
+  resetButton.addEventListener("click", resetConversation);
+  clearButton.addEventListener("click", clearLocalTrace);
 
-  chatForm.addEventListener("submit", async (event) => {
+  chatForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    const message = messageInput.value.trim();
-    if (!message) return;
-    await sendMessage(message);
-    messageInput.value = "";
+    void sendMessage();
   });
 
   window.addEventListener("storage", (event) => {
@@ -401,11 +421,14 @@ async function init() {
 
   window.addEventListener("focus", refreshUserApiState);
 
+  setSending(true);
   try {
     await loadBootstrap();
     await loadHistory();
   } catch (error) {
     setInlineStatus(chatStatus, `页面打开时出了点小问题：${error.message}`, "error");
+  } finally {
+    setSending(false);
   }
 }
 
