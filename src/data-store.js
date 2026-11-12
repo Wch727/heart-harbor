@@ -1,6 +1,7 @@
 const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
+const { randomUUID } = require("node:crypto");
 
 const { createPasswordRecord } = require("./auth");
 
@@ -250,16 +251,38 @@ async function readData(key) {
   return JSON.parse(raw);
 }
 
-async function writeData(key, value) {
-  await ensureDataFiles();
-  const dataset = datasets[key];
-  if (!dataset) throw new Error(`Unknown dataset: ${key}`);
-
-  const filePath = getDatasetFilePath(dataset);
+function queueWrite(key, operation) {
   const previousQueue = writeQueues.get(key) || Promise.resolve();
-  const nextQueue = previousQueue.then(() => fs.writeFile(filePath, JSON.stringify(value, null, 2), "utf8"));
+  const nextQueue = previousQueue.then(operation);
   writeQueues.set(key, nextQueue.catch(() => {}));
   return nextQueue;
+}
+
+async function replaceDataFile(key, value) {
+  const filePath = getDatasetFilePath(datasets[key]);
+  const temporaryPath = `${filePath}.${randomUUID()}.tmp`;
+  try {
+    await fs.writeFile(temporaryPath, JSON.stringify(value, null, 2), { encoding: "utf8", mode: 0o600 });
+    await fs.rename(temporaryPath, filePath);
+  } finally {
+    await fs.rm(temporaryPath, { force: true });
+  }
+}
+
+async function writeData(key, value) {
+  await ensureDataFiles();
+  if (!Object.hasOwn(datasets, key)) throw new Error(`Unknown dataset: ${key}`);
+  const filePath = getDatasetFilePath(datasets[key]);
+  return queueWrite(key, () => fs.writeFile(filePath, JSON.stringify(value, null, 2), "utf8"));
+}
+
+function updateData(key, update) {
+  return queueWrite(key, async () => {
+    const data = await readData(key);
+    const result = update(data);
+    if (result !== undefined) await replaceDataFile(key, data);
+    return result;
+  });
 }
 
 function sanitizePublicConfig(siteData) {
@@ -270,33 +293,6 @@ function sanitizePublicConfig(siteData) {
       aiEnabled: Boolean(siteData.ai?.enabled)
     },
     updatedAt: siteData.updatedAt
-  };
-}
-
-function summarizePublicStats(checkins, conversations) {
-  const recentCheckins = [...checkins]
-    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
-    .slice(0, 12);
-
-  const moodSnapshot = recentCheckins.reduce((accumulator, item) => {
-    const bucket = accumulator.find((entry) => entry.mood === item.mood);
-    if (bucket) {
-      bucket.count += 1;
-    } else {
-      accumulator.push({
-        mood: item.mood,
-        count: 1,
-        color: moodPalette[item.mood] || "#8aa4d4"
-      });
-    }
-
-    return accumulator;
-  }, []);
-
-  return {
-    checkinCount: checkins.length,
-    conversationCount: conversations.length,
-    moodSnapshot: moodSnapshot.sort((left, right) => right.count - left.count).slice(0, 5)
   };
 }
 
@@ -350,12 +346,13 @@ function summarizeDashboard(checkins, conversations, resources) {
 module.exports = {
   dataDirectory,
   ensureDataFiles,
+  isCheckinMood: (mood) => Object.hasOwn(moodPalette, mood),
   logsDirectory,
   projectDataDirectory,
   readData,
   sanitizePublicConfig,
   summarizeDashboard,
-  summarizePublicStats,
   timestamp,
+  updateData,
   writeData
 };

@@ -1,4 +1,4 @@
-import { api, bindSiteFields, bindSiteName, escapeHtml, registerServiceWorker, setInlineStatus } from "./shared.js";
+import { api, bindSiteFields, bindSiteName, registerServiceWorker, setInlineStatus } from "./shared.js";
 
 const checkinForm = document.getElementById("checkinForm");
 const checkinStatus = document.getElementById("checkinStatus");
@@ -10,24 +10,6 @@ const stressValue = document.getElementById("stressValue");
 function updateRangeOutputs() {
   energyValue.textContent = energyRange.value;
   stressValue.textContent = stressRange.value;
-}
-
-function renderStats(stats) {
-  const checkinCount = document.getElementById("checkinCount");
-  const conversationCount = document.getElementById("conversationCount");
-  if (checkinCount) checkinCount.textContent = stats.checkinCount;
-  if (conversationCount) conversationCount.textContent = stats.conversationCount;
-
-  const moodSnapshot = document.getElementById("moodSnapshot");
-  if (!moodSnapshot) return;
-  moodSnapshot.innerHTML = stats.moodSnapshot.length
-    ? stats.moodSnapshot
-        .map(
-          (item) =>
-            `<span class="chip" style="color:${item.color}">${escapeHtml(item.mood)} ${item.count} 次</span>`
-        )
-        .join("")
-    : `<span class="chip">还没有新的签到情绪</span>`;
 }
 
 function applyConfig(config) {
@@ -45,7 +27,6 @@ function applyConfig(config) {
 async function loadBootstrap() {
   const payload = await api("/api/public/bootstrap");
   applyConfig(payload.config);
-  renderStats(payload.stats);
 }
 
 async function handleCheckinSubmit(event) {
@@ -73,7 +54,6 @@ async function handleCheckinSubmit(event) {
     energyRange.value = "5";
     stressRange.value = "5";
     updateRangeOutputs();
-    void loadBootstrap().catch(() => {});
   } catch (error) {
     setInlineStatus(checkinStatus, error.message, "error");
   }

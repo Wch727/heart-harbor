@@ -40,8 +40,9 @@
       <p class="section-copy">你可以匿名使用，普通访客看不到你的签到和对话；后台也只有管理员登录后才能进入。是否启用在线 AI，也会直接写清楚。</p>
       <div class="hero-actions">
         <a href="/chat?mode=listen" class="button button-primary">知道了，去聊天</a>
-        <button id="clearPrivacyTraceBtn" type="button" class="button button-secondary">清除本机痕迹</button>
+        <button id="clearPrivacyTraceBtn" type="button" class="button button-secondary" aria-describedby="clearPrivacyScope">清除浏览器记录</button>
       </div>
+      <p id="clearPrivacyScope" class="section-copy">这个操作会清除当前浏览器的会话入口、陪伴方式和访客标识。站点保存的聊天和签到仍会保留。</p>
       <p id="clearPrivacyStatus" class="status-inline" role="status" aria-live="polite"></p>
     </section>
 
@@ -65,9 +66,9 @@
       </article>
 
       <article class="surface-card privacy-note-card">
-        <div class="card-topline">本机痕迹</div>
-        <h2>你可以手动清掉这台设备上的会话痕迹。</h2>
-        <p class="section-copy">如果你担心同一台电脑、同一个浏览器被别人看到，可以点上面的“清除本机痕迹”。</p>
+        <div class="card-topline">删除聊天</div>
+        <h2>可以从站点删除当前聊天。</h2>
+        <p class="section-copy">在聊天页选择「删除这段聊天」，确认后，站点会删除该会话。签到和模型服务商可能保留的副本需分别处理。请在清除浏览器记录之前操作，以免失去会话入口。</p>
       </article>
     </section>
 

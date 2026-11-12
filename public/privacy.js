@@ -20,10 +20,11 @@ function applyConfig(config) {
 }
 
 function clearLocalTrace() {
+  if (!window.confirm("清除这个浏览器的会话入口和访客标识？站点保存的聊天和签到会保留。")) return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SUPPORT_MODE_KEY);
   document.cookie = "companion_visitor_id=; Max-Age=0; Path=/; SameSite=Lax";
-  setInlineStatus(clearPrivacyStatus, "这台设备上的会话痕迹已经清掉了。", "success");
+  setInlineStatus(clearPrivacyStatus, "已清除浏览器记录。站点保存的聊天和签到仍会保留。", "success");
 }
 
 async function init() {

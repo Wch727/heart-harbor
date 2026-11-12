@@ -13,11 +13,12 @@ const {
 } = require("./src/auth");
 const {
   ensureDataFiles,
+  isCheckinMood,
   readData,
   sanitizePublicConfig,
   summarizeDashboard,
-  summarizePublicStats,
   timestamp,
+  updateData,
   writeData
 } = require("./src/data-store");
 const { createAssistantReply, normalizeSupportMode, testRemoteAiConnection } = require("./src/chat-engine");
@@ -281,18 +282,8 @@ function requireAdmin(request, response) {
 }
 
 async function handlePublicBootstrap(response) {
-  const [siteData, resources, checkins, conversations] = await Promise.all([
-    readData("site"),
-    readData("resources"),
-    readData("checkins"),
-    readData("conversations")
-  ]);
-
-  sendJson(response, 200, {
-    config: sanitizePublicConfig(siteData),
-    featuredResources: resources.filter((item) => item.enabled).slice(0, 6),
-    stats: summarizePublicStats(checkins, conversations)
-  });
+  const siteData = await readData("site");
+  sendJson(response, 200, { config: sanitizePublicConfig(siteData) });
 }
 
 async function handlePublicResources(response) {
@@ -333,17 +324,16 @@ async function handlePublicCheckin(request, response) {
   const visitorId = ensureVisitorId(request, response);
   const payload = await parseJsonBody(request);
   const nickname = String(payload.nickname || "匿名来访者").trim().slice(0, 24);
-  const mood = String(payload.mood || "").trim().slice(0, 12);
+  const mood = typeof payload.mood === "string" ? payload.mood.trim() : "";
   const note = String(payload.note || "").trim().slice(0, 600);
   const energy = Number(payload.energy || 0);
   const stress = Number(payload.stress || 0);
 
-  if (!mood) {
-    sendError(response, 400, "请选择当前情绪。");
+  if (!isCheckinMood(mood)) {
+    sendError(response, 400, "请从签到页提供的选项里选一个心情。");
     return;
   }
 
-  const checkins = await readData("checkins");
   const entry = {
     id: crypto.randomUUID(),
     visitorId,
@@ -355,8 +345,7 @@ async function handlePublicCheckin(request, response) {
     createdAt: timestamp()
   };
 
-  checkins.unshift(entry);
-  await writeData("checkins", checkins);
+  await updateData("checkins", (checkins) => checkins.unshift(entry));
 
   sendJson(response, 201, {
     message: "今天的心情记下来了。",
@@ -390,6 +379,22 @@ async function handleChatHistory(request, response, url) {
   }
 
   sendJson(response, 200, { conversation });
+}
+
+async function handleChatDelete(request, response, url) {
+  const visitorId = ensureVisitorId(request, response);
+  const conversationId = url.searchParams.get("conversationId");
+  const deleted = await updateData("conversations", (conversations) => {
+    const index = conversations.findIndex((item) => item.id === conversationId && item.visitorId === visitorId);
+    if (index === -1) return;
+    conversations.splice(index, 1);
+    return true;
+  });
+  if (!deleted) {
+    sendError(response, 404, "没有找到这段会话。");
+    return;
+  }
+  sendJson(response, 200, { message: "这段聊天已从站点删除。" });
 }
 
 async function handleChatMessage(request, response) {
@@ -427,6 +432,10 @@ async function handleChatMessage(request, response) {
 
   let conversation =
     conversations.find((item) => item.id === requestedConversationId && item.visitorId === visitorId) || null;
+  if (requestedConversationId && !conversation) {
+    sendError(response, 404, "没有找到这段会话。可以重新开始，草稿会保留。");
+    return;
+  }
   if (!conversation) {
     conversation = {
       id: crypto.randomUUID(),
@@ -449,46 +458,56 @@ async function handleChatMessage(request, response) {
         }
       ]
     };
-    conversations.unshift(conversation);
   }
 
-  conversation.nickname = nickname || conversation.nickname;
-  conversation.supportMode = supportMode || conversation.supportMode || "listen";
-  conversation.messages.push({
+  const userMessage = {
     id: crypto.randomUUID(),
     role: "user",
     content: message,
     createdAt: timestamp()
-  });
+  };
 
   const assistantResult = await createAssistantReply({
     message,
-    conversation,
+    conversation: { ...conversation, messages: [...conversation.messages, userMessage] },
     siteData: runtimeSiteData,
     resources,
-    supportMode: conversation.supportMode
+    supportMode
   });
 
-  conversation.messages.push({
+  const assistantMessage = {
     id: crypto.randomUUID(),
     role: "assistant",
     content: assistantResult.content,
     createdAt: timestamp()
+  };
+  const saved = await updateData("conversations", (latest) => {
+    const current = requestedConversationId
+      ? latest.find((item) => item.id === requestedConversationId && item.visitorId === visitorId)
+      : conversation;
+    if (!current) return;
+    current.messages.push(userMessage, assistantMessage);
+    current.nickname = nickname;
+    current.supportMode = supportMode;
+    current.updatedAt = timestamp();
+    current.lastMood = assistantResult.analysis.label;
+    if (assistantResult.analysis.isCrisis) current.status = "needs-followup";
+    current.summary = buildConversationSummary(current.messages, assistantResult.analysis);
+    current.matchedResourceIds = assistantResult.matchedResources.map((item) => item.id);
+    if (!requestedConversationId) latest.unshift(current);
+    return current;
   });
-  conversation.updatedAt = timestamp();
-  conversation.lastMood = assistantResult.analysis.label;
-  conversation.status = assistantResult.analysis.isCrisis ? "needs-followup" : conversation.status === "stable" ? "stable" : "open";
-  conversation.summary = buildConversationSummary(conversation.messages, assistantResult.analysis);
-  conversation.matchedResourceIds = assistantResult.matchedResources.map((item) => item.id);
-
-  await writeData("conversations", conversations);
+  if (!saved) {
+    sendError(response, 404, "这段会话已经删除。可以重新开始，草稿会保留。");
+    return;
+  }
 
   sendJson(response, 200, {
-    conversationId: conversation.id,
+    conversationId: saved.id,
     reply: assistantResult.content,
     analysis: assistantResult.analysis,
     matchedResources: assistantResult.matchedResources,
-    conversation
+    conversation: saved
   });
 }
 
@@ -574,18 +593,19 @@ async function handleAdminConversationUpdate(request, response, params) {
   const payload = await parseJsonBody(request);
   const status = String(payload.status || "").trim();
   const adminNote = String(payload.adminNote || "").trim().slice(0, 1200);
-  const conversations = await readData("conversations");
-  const conversation = conversations.find((item) => item.id === params.id);
+  const conversation = await updateData("conversations", (conversations) => {
+    const current = conversations.find((item) => item.id === params.id);
+    if (!current) return;
+    if (status) current.status = status;
+    current.adminNote = adminNote;
+    current.updatedAt = timestamp();
+    return current;
+  });
 
   if (!conversation) {
     sendError(response, 404, "会话不存在。");
     return;
   }
-
-  if (status) conversation.status = status;
-  conversation.adminNote = adminNote;
-  conversation.updatedAt = timestamp();
-  await writeData("conversations", conversations);
 
   sendJson(response, 200, {
     message: "会话已更新。",
@@ -789,6 +809,7 @@ async function handleRequest(request, response) {
     if (request.method === "POST" && url.pathname === "/api/public/test-ai") return await handlePublicTestAi(request, response);
     if (request.method === "POST" && url.pathname === "/api/public/checkin") return await handlePublicCheckin(request, response);
     if (request.method === "GET" && url.pathname === "/api/chat/history") return await handleChatHistory(request, response, url);
+    if (request.method === "DELETE" && url.pathname === "/api/chat/history") return await handleChatDelete(request, response, url);
     if (request.method === "POST" && url.pathname === "/api/chat/message") return await handleChatMessage(request, response);
 
     if (request.method === "POST" && url.pathname === "/api/admin/login") return await handleAdminLogin(request, response);
@@ -841,7 +862,7 @@ async function start() {
   await ensureDataFiles();
   const server = http.createServer(handleRequest);
   server.listen(port, () => {
-    console.log(`Emotional companion site is running on http://localhost:${port}`);
+    console.log(`Emotional companion site is running on http://localhost:${server.address().port}`);
   });
 }
 

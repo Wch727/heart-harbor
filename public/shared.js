@@ -15,7 +15,9 @@ export async function api(path, options = {}) {
 
   if (!response.ok) {
     const message = typeof payload === "string" ? payload : payload?.error || "请求失败";
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
 
   return payload;

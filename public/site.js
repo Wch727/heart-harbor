@@ -1,24 +1,4 @@
-import { api, bindSiteFields, bindSiteName, escapeHtml, registerServiceWorker } from "./shared.js";
-
-function renderStats(stats) {
-  const checkinCount = document.getElementById("checkinCount");
-  const conversationCount = document.getElementById("conversationCount");
-  const moodSnapshot = document.getElementById("moodSnapshot");
-
-  if (checkinCount) checkinCount.textContent = stats.checkinCount;
-  if (conversationCount) conversationCount.textContent = stats.conversationCount;
-
-  if (moodSnapshot) {
-    moodSnapshot.innerHTML = stats.moodSnapshot.length
-      ? stats.moodSnapshot
-          .map(
-            (item) =>
-              `<span class="chip" style="color:${item.color}">${escapeHtml(item.mood)} ${item.count} 次</span>`
-          )
-          .join("")
-      : `<span class="chip">今晚还没有新的情绪标签</span>`;
-  }
-}
+import { api, bindSiteFields, bindSiteName, registerServiceWorker } from "./shared.js";
 
 function applyConfig(config) {
   bindSiteName(config);
@@ -69,7 +49,6 @@ async function init() {
 
   const payload = await api("/api/public/bootstrap");
   applyConfig(payload.config);
-  renderStats(payload.stats);
 }
 
 init().catch(() => {});

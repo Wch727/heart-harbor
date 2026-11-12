@@ -8,6 +8,7 @@ const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendBtn");
 const resetButton = document.getElementById("resetConversationBtn");
+const deleteButton = document.getElementById("deleteConversationBtn");
 const clearButton = document.getElementById("clearLocalTraceBtn");
 const nicknameInput = document.getElementById("nicknameInput");
 const chatStatus = document.getElementById("chatStatus");
@@ -186,6 +187,7 @@ function renderMatchedResources(resources = []) {
 
 function renderConversationMeta(analysis) {
   const conversation = state.conversation;
+  deleteButton.hidden = !state.conversationId;
   conversationMeta.innerHTML = `
     <div><strong>目前的节奏</strong><span>${escapeHtml(humanizeStatus(conversation?.status))}</span></div>
     <div><strong>最后更新</strong><span>${conversation ? formatDate(conversation.updatedAt) : "等待第一条消息"}</span></div>
@@ -279,21 +281,25 @@ async function loadHistory() {
     renderMatchedResources([]);
     renderConversationMeta();
     renderSafetyState(state.conversation?.status === "needs-followup");
-  } catch {
-    state.conversationId = "";
-    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    if (error.status === 404) {
+      state.conversationId = "";
+      localStorage.removeItem(STORAGE_KEY);
+    }
     state.conversation = null;
     renderEmptyState();
     renderMatchedResources([]);
     renderConversationMeta();
     renderAnalysis(null);
     renderSafetyState(false);
+    if (error.status !== 404) throw error;
   }
 }
 
 function setSending(sending) {
   sendButton.disabled = sending;
   resetButton.disabled = sending;
+  deleteButton.disabled = sending;
   clearButton.disabled = sending;
   chatForm.setAttribute("aria-busy", String(sending));
   document.querySelectorAll(".starter-btn, [data-inline-starter], [data-support-mode]").forEach((button) => {
@@ -380,21 +386,39 @@ function resetConversation() {
   setInlineStatus(chatStatus, "这段我们先放下。你想重新开始，也可以。", "info");
 }
 
+async function deleteConversation() {
+  const conversationId = state.conversationId;
+  if (!conversationId || sendButton.disabled) return;
+  if (!window.confirm("从站点删除这段聊天？删除后无法恢复。")) return;
+
+  setSending(true);
+  try {
+    const payload = await api(`/api/chat/history?conversationId=${encodeURIComponent(conversationId)}`, { method: "DELETE" });
+    resetConversation();
+    setInlineStatus(chatStatus, payload.message, "success");
+  } catch (error) {
+    setInlineStatus(chatStatus, error.message, "error");
+  } finally {
+    setSending(false);
+  }
+}
+
 function clearLocalTrace() {
+  if (!window.confirm("清除这个浏览器的会话入口和访客标识？站点里的聊天和签到会保留。如需删除当前聊天，请先用「删除这段聊天」。")) return;
   state.conversationId = "";
   state.conversation = null;
   localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(SUPPORT_MODE_KEY);
   document.cookie = "companion_visitor_id=; Max-Age=0; Path=/; SameSite=Lax";
   nicknameInput.value = "";
   messageInput.value = "";
   setSupportMode("listen", { silent: true });
+  localStorage.removeItem(SUPPORT_MODE_KEY);
   renderEmptyState();
   renderAnalysis(null);
   renderMatchedResources([]);
   renderConversationMeta();
   renderSafetyState(false);
-  setInlineStatus(chatStatus, "本机上的会话痕迹已经清掉了。下次打开会从新的访客状态开始。", "success");
+  setInlineStatus(chatStatus, "已清除浏览器记录。站点保存的聊天和签到仍会保留。", "success");
 }
 
 async function init() {
@@ -406,6 +430,7 @@ async function init() {
   bindStarters();
   bindSupportModes();
   resetButton.addEventListener("click", resetConversation);
+  deleteButton.addEventListener("click", deleteConversation);
   clearButton.addEventListener("click", clearLocalTrace);
 
   chatForm.addEventListener("submit", (event) => {
