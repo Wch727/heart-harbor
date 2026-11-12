@@ -38,8 +38,8 @@ function buildDefaultSiteData() {
       heroText:
         "想说的话，可以从今天的一件小事说起。今天没什么想说的，也可以点点水面，看一圈涟漪慢慢散开。",
       chatGreeting:
-        "我在，慢慢来就好。你不用一上来就说得很完整，我们先从现在最卡的那一点开始。",
-      chatPlaceholder: "例如：我今天一直很绷，明明很累却停不下来。",
+        "可以从今天的一件小事说起。想到哪儿，就说到哪儿。",
+      chatPlaceholder: "比如，今天回家路上，我一直在想一件事。",
       footerNote:
         "如果你觉得自己现在不安全，请联系一个能来陪你的人。",
       emergencyHotline: "全国统一心理援助热线 12356",

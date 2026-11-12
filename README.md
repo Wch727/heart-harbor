@@ -17,7 +17,7 @@ npm start
 
 浏览器打开 [http://localhost:3000](http://localhost:3000)。
 
-开发时可运行 `npm run dev`，修改服务端代码后会自动重启。使用 `npm test` 运行密码校验、情绪分析和陪伴回复测试。
+开发时可运行 `npm run dev`，修改服务端代码后会自动重启。使用 `npm test` 检查密码校验、情绪分析、陪伴回复、首页入口和离线缓存规则。
 
 ## 默认后台账号
 

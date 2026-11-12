@@ -53,7 +53,7 @@ async function handleCheckinSubmit(event) {
   const formData = new FormData(checkinForm);
 
   try {
-    setInlineStatus(checkinStatus, "我先帮你轻轻记一下。", "info");
+    setInlineStatus(checkinStatus, "正在保存…", "info");
     const payload = await api("/api/public/checkin", {
       method: "POST",
       body: {
@@ -73,7 +73,7 @@ async function handleCheckinSubmit(event) {
     energyRange.value = "5";
     stressRange.value = "5";
     updateRangeOutputs();
-    await loadBootstrap();
+    void loadBootstrap().catch(() => {});
   } catch (error) {
     setInlineStatus(checkinStatus, error.message, "error");
   }

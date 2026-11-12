@@ -122,9 +122,8 @@ function renderSafetyState(isCrisis = false) {
 function renderEmptyState() {
   chatFeed.innerHTML = `
     <div class="message-empty message-empty-rich">
-      <span class="message-empty__eyebrow">今晚先从这里开始</span>
-      <strong class="message-empty__title">如果你不知道怎么开口，就先挑一句最像你的。</strong>
-      <p>你不用把事情整理清楚了再说。先有第一句，后面的我们再慢慢来。</p>
+      <strong class="message-empty__title">不知道从哪儿说起？</strong>
+      <p>可以挑一句像你现在心情的话。</p>
       <div class="starter-inline-grid">
         <button type="button" class="starter-inline-chip" data-inline-starter="我现在脑子特别乱，像一团线缠在一起。">我现在脑子特别乱</button>
         <button type="button" class="starter-inline-chip" data-inline-starter="我今天一直很绷，明明累了却还是停不下来。">我今天一直很绷</button>
@@ -297,7 +296,7 @@ async function sendMessage(message) {
   if (!message.trim()) return;
 
   try {
-    setInlineStatus(chatStatus, "我在认真看，等我一下。", "info");
+    setInlineStatus(chatStatus, "正在等回复…", "info");
     const payload = await api("/api/chat/message", {
       method: "POST",
       body: {
@@ -319,7 +318,7 @@ async function sendMessage(message) {
     renderConversationMeta(payload.analysis);
     setInlineStatus(
       chatStatus,
-      payload.analysis.isCrisis ? "现在先把安全放在最前面。" : "我回你了。如果你愿意，可以接着往下说。",
+      payload.analysis.isCrisis ? "现在先把安全放在最前面。" : "",
       payload.analysis.isCrisis ? "error" : "success"
     );
   } catch (error) {

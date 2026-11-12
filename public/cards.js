@@ -52,8 +52,8 @@ function renderResources() {
 
   resourceCountNote.textContent =
     state.activeFilter === "all"
-      ? `现在有 ${visibleResources.length} 张支持卡，你可以先挑最顺眼的一张。`
-      : `现在只显示「${state.activeFilter}」相关的 ${visibleResources.length} 张支持卡。`;
+      ? `共 ${visibleResources.length} 张`
+      : `「${state.activeFilter}」有 ${visibleResources.length} 张`;
 
   resourceGrid.innerHTML = visibleResources.length
     ? visibleResources
@@ -79,12 +79,12 @@ function renderResources() {
     : `
         <article class="resource-card resource-card--full">
           <div class="resource-card__head">
-            <h3>这一类暂时还没有卡片</h3>
+            <h3>这里还没有卡片</h3>
           </div>
-          <p>你也可以换个分类看看，或者直接去聊天页说说你现在需要什么。</p>
+          <p>如果有话想说，也可以去聊几句。</p>
           <div class="resource-card__actions">
-            <a href="/chat?mode=listen" class="button button-primary">去聊天页</a>
-            <button type="button" class="button button-secondary" id="resetResourceFilterBtn">看全部卡片</button>
+            <a href="/chat?mode=listen" class="button button-primary">去聊几句</a>
+            ${state.activeFilter === "all" ? "" : '<button type="button" class="button button-secondary" id="resetResourceFilterBtn">看全部卡片</button>'}
           </div>
         </article>
       `;

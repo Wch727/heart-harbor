@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { testPublicPages } = require("./public-pages");
 
 const { createPasswordRecord, verifyPassword } = require("../src/auth");
 const { analyzeMessage, createAssistantReply, normalizeSupportMode } = require("../src/chat-engine");
@@ -69,6 +70,7 @@ async function run() {
   assert.match(planReply.content, /今晚不求解决全部/);
   assert.equal(planReply.analysis.supportMode, "plan");
 
+  await testPublicPages();
   console.log("All checks passed.");
 }
 

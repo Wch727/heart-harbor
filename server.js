@@ -359,7 +359,7 @@ async function handlePublicCheckin(request, response) {
   await writeData("checkins", checkins);
 
   sendJson(response, 201, {
-    message: "签到已保存。你已经做了一件照顾自己的事。",
+    message: "今天的心情记下来了。",
     checkin: entry
   });
 }
