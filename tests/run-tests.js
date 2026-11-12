@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const { testPublicPages } = require("./public-pages");
+const { testEmotionWorker } = require("./emotion-worker");
 
 const { createPasswordRecord, verifyPassword } = require("../src/auth");
 const { analyzeMessage, createAssistantReply, normalizeSupportMode } = require("../src/chat-engine");
@@ -58,6 +59,18 @@ async function run() {
     ["晚上和朋友吃了饭", "neutral"],
     ["今天挺开心的", "positive"],
     ["我不开心", "neutral"],
+    ["我没觉得难过，只是来确认一下时间。", "neutral"],
+    ["这事谈不上焦虑。", "neutral"],
+    ["我并不觉得特别紧张。", "neutral"],
+    ["我没觉得自己很难过。", "neutral"],
+    ["倒也不是不难过。", "low"],
+    ["以前一到晚上就焦虑，现在不会紧张了。", "neutral"],
+    ["以前很焦虑现在没事了", "neutral"],
+    ["原来很焦虑，但这会儿只觉得累。", "burnout"],
+    ["以前没觉得焦虑，但现在很紧张。", "anxiety"],
+    ["刚收到好消息很高兴，但想到要上台还是很紧张。", "anxiety"],
+    ["我没觉得难过，不过刚才看到照片还是有点难过。", "low"],
+    ["昨天她没回我消息。", "relationship"],
     ["我没有焦虑，只是有点累", "burnout"],
     ["我不紧张了，刚刚松了口气", "positive"],
     ["在积累一些经验", "neutral"],
@@ -109,6 +122,7 @@ async function run() {
   assert.match(crisisReply.content, /12356/);
 
   await testPublicPages();
+  await testEmotionWorker(siteData);
   console.log("All checks passed.");
 }
 

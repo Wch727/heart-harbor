@@ -19,12 +19,12 @@ function selectEmotion({ label, score, second }) {
   return labelMap.get(label) || null;
 }
 
-function startEmotionClassifier(modelDir) {
+function startEmotionClassifier(modelDir, launch = spawn) {
   const files = ["config.json", "vocab.txt", "pytorch_model.bin"];
   if (worker || process.env.COMPANION_EMOTION_DISABLED === "1" ||
       !files.every((name) => existsSync(path.join(modelDir, name)))) return;
 
-  const child = spawn(process.env.COMPANION_EMOTION_PYTHON || "python", [
+  const child = launch(process.env.COMPANION_EMOTION_PYTHON || "python", [
     "-u", path.join(__dirname, "emotion-worker.py"), modelDir
   ], {
     stdio: ["pipe", "pipe", "ignore"],
@@ -33,10 +33,12 @@ function startEmotionClassifier(modelDir) {
   });
   const state = { child, ready: false, nextId: 0, pending: new Map() };
   worker = state;
+  const lines = createInterface({ input: child.stdout });
 
   function unavailable() {
     if (worker !== state) return;
     worker = null;
+    lines.close();
     for (const complete of state.pending.values()) complete(null);
     state.pending.clear();
     console.warn("Local emotion classifier unavailable; using rules.");
@@ -45,7 +47,7 @@ function startEmotionClassifier(modelDir) {
   child.once("error", unavailable);
   child.once("exit", unavailable);
   child.stdin.on("error", unavailable);
-  createInterface({ input: child.stdout }).on("line", (line) => {
+  lines.on("line", (line) => {
     let result;
     try {
       result = JSON.parse(line);

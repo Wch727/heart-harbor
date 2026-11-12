@@ -108,18 +108,28 @@ function normalizeSupportMode(mode = "") {
   return Object.hasOwn(supportModes, mode) ? mode : "listen";
 }
 
-function hasEmotionKeyword(text, keyword) {
+const emotionNegation = /(?:并?不(?:太|再|怎么)?|并?没(?:有|那么|怎么)?|谈不上|算不上|不是|并非)(?:很|太|特别|那么)?(?:会|容易)?(?:觉得|感觉(?:到)?|感到|有)?(?:自己)?(?:很|太|特别|那么|有点)?$/;
+const doubleEmotionNegation = /(?:不是|并非)(?:不|没)$/;
+const emotionTimeShift = /(?:以前|原来|之前|刚才|起初)[^。！？!?]*?(?:[，,；;。]\s*)?(?:(?:但(?:是)?|不过|可是)\s*)?(?:现在|如今|这会儿|此刻)/;
+
+function hasEmotionKeyword(text, keyword, negated = false) {
   let start = text.indexOf(keyword);
   while (start !== -1) {
     const prefix = text.slice(0, start);
-    if (!/(?:不太|并不|不是很|没有|没那么|不再|不怎么|不|没)$/.test(prefix)) return true;
+    const denied = emotionNegation.test(prefix) && !doubleEmotionNegation.test(prefix);
+    if (denied === negated) return true;
     start = text.indexOf(keyword, start + keyword.length);
   }
   return false;
 }
 
+function currentEmotionText(text) {
+  const transition = emotionTimeShift.exec(text);
+  return transition ? text.slice(transition.index + transition[0].length) : text;
+}
+
 function findRule(text) {
-  const normalized = normalizeText(text).replace(/积累|累积|累计|累赘|连累/g, " ");
+  const normalized = currentEmotionText(normalizeText(text)).replace(/积累|累积|累计|累赘|连累/g, " ");
 
   const scored = categoryRules
     .map((rule) => ({
@@ -402,7 +412,13 @@ async function createAssistantReply({ message, conversation, siteData, resources
   if (analysis.key === "neutral" && !shortAcknowledgment.test(text) && !greeting.test(text)) {
     const key = await classifyEmotion(message);
     const rule = key === "positive" ? positiveRule : categoryRules.find((item) => item.key === key);
-    if (rule) {
+    const keywords = key === "positive" ? positiveKeywords : rule?.keywords;
+    const currentText = currentEmotionText(text);
+    const contradictsText = keywords?.some((keyword) =>
+      hasEmotionKeyword(currentText, keyword, true) ||
+      (currentText !== text && hasEmotionKeyword(text.slice(0, text.length - currentText.length), keyword))
+    );
+    if (rule && !contradictsText) {
       const { label, categories, steps, opening } = rule;
       analysis = { ...analysis, key, label, categories, steps, opening, tags: [label], emotionSource: "structbert-tiny" };
     }
