@@ -3,6 +3,7 @@ const { testPublicPages } = require("./public-pages");
 
 const { createPasswordRecord, verifyPassword } = require("../src/auth");
 const { analyzeMessage, createAssistantReply, normalizeSupportMode } = require("../src/chat-engine");
+const { selectEmotion } = require("../src/emotion-classifier");
 
 const siteData = {
   site: {
@@ -47,6 +48,10 @@ async function run() {
   assert.equal(crisisAnalysis.label, "危机风险");
   assert.equal(normalizeSupportMode("unknown"), "listen");
   assert.equal(normalizeSupportMode("constructor"), "listen");
+  assert.equal(selectEmotion({ label: "悲伤", score: 0.7, second: 0.03 }), "low");
+  assert.equal(selectEmotion({ label: "高兴", score: 0.6, second: 0.05 }), null);
+  assert.equal(selectEmotion({ label: "恐惧", score: 0.8, second: 0.72 }), null);
+  assert.equal(selectEmotion({ label: "愤怒", score: 0.98, second: 0.01 }), null);
 
   const moodCases = [
     ["你好", "neutral"],

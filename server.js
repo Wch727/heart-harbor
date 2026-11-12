@@ -12,6 +12,7 @@ const {
   createPasswordRecord
 } = require("./src/auth");
 const {
+  dataDirectory,
   ensureDataFiles,
   isCheckinMood,
   readData,
@@ -22,6 +23,7 @@ const {
   writeData
 } = require("./src/data-store");
 const { createAssistantReply, normalizeSupportMode, testRemoteAiConnection } = require("./src/chat-engine");
+const { startEmotionClassifier } = require("./src/emotion-classifier");
 
 const publicDirectory = path.join(process.cwd(), "public");
 const port = Number(process.env.PORT || 3000);
@@ -863,6 +865,8 @@ async function start() {
   const server = http.createServer(handleRequest);
   server.listen(port, () => {
     console.log(`Emotional companion site is running on http://localhost:${server.address().port}`);
+    const modelDir = process.env.COMPANION_EMOTION_MODEL_DIR || path.join(dataDirectory, "models", "structbert-tiny");
+    startEmotionClassifier(modelDir);
   });
 }
 

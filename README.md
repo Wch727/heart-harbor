@@ -9,7 +9,7 @@
 
 ## 启动方式
 
-使用 Node.js 22 或更新版本。项目没有第三方依赖，可在项目根目录直接启动。
+使用 Node.js 22 或更新版本。基础功能不需要安装第三方依赖，可在项目根目录直接启动。
 
 ```bash
 npm start
@@ -50,6 +50,12 @@ server.js Node 服务入口
 - 签到和会话保存在数据目录下的 `logs/`
 - 如需自定义位置，可设置环境变量 `COMPANION_DATA_DIR`
 - Git 忽略项目内的 `data/`，供旧数据迁移或本地运行使用。AI Key、会话、签到和后台配置均属于运行数据。
+
+## 可选的本机情绪识别
+
+站点可在本机 CPU 上运行 [StructBERT Tiny](https://modelscope.cn/models/iic/nlp_structbert_emotion-classification_chinese-tiny)。准备装有 PyTorch 和 Transformers 的 Python，把官方模型的 `config.json`、`vocab.txt` 和 `pytorch_model.bin` 放进运行数据目录下的 `models/structbert-tiny/`，然后重启服务。也可以用 `COMPANION_EMOTION_MODEL_DIR` 指定模型目录，用 `COMPANION_EMOTION_PYTHON` 指定 Python 路径。
+
+模型加载完成后，启动日志会出现 `Local StructBERT emotion classifier ready.`。模型只辅助本地回复里规则尚未识别的情绪，文本在服务器本机推理。模型未就绪或超时时继续使用规则。设定 `COMPANION_EMOTION_DISABLED=1` 可关闭模型。
 
 ## 说明
 

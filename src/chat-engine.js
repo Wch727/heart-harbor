@@ -1,3 +1,5 @@
+const { classifyEmotion } = require("./emotion-classifier");
+
 const categoryRules = [
   {
     key: "anxiety",
@@ -77,6 +79,7 @@ const neutralRule = { key: "neutral", label: "还在了解", categories: [], ste
 const positiveRule = { key: "positive", label: "开心", categories: [], steps: [], opening: "" };
 const positiveKeywords = ["开心", "高兴", "快乐", "满足", "松了口气", "好消息", "心情很好", "挺顺利"];
 const shortAcknowledgment = /^(嗯+|哦+|好|好的|对|是啊|是的|还是那样|还是这样|说不清)[。！!…\s]*$/;
+const greeting = /^(你好|嗨|哈喽|hello|hi)[。！!\s]*$/;
 
 const supportModes = {
   listen: {
@@ -185,7 +188,7 @@ function buildLocalReply(message, analysis, conversation, mode) {
     reply = "听起来今天有件让你开心的事。你最想记住的是哪一刻？";
   } else if (shortAcknowledgment.test(text) && continuing) {
     reply = "可以慢慢想。要是还想聊刚才那件事，想到哪儿就从哪儿说。";
-  } else if (/^(你好|嗨|哈喽|hello|hi)[。！!\s]*$/.test(text)) {
+  } else if (greeting.test(text)) {
     reply = "你好呀。今天有什么想聊的？";
   } else if (analysis.key === "neutral") {
     reply = {
@@ -367,58 +370,52 @@ async function testRemoteAiConnection(siteData, aiOverride = null) {
 }
 
 async function createAssistantReply({ message, conversation, siteData, resources, supportMode }) {
-  const analysis = analyzeMessage(message, siteData);
-  const matchedResources = pickResources(resources, analysis);
+  let analysis = analyzeMessage(message, siteData);
   const activeMode = normalizeSupportMode(supportMode);
+  const modeFields = { supportMode: activeMode, supportModeLabel: supportModes[activeMode].label };
 
   if (analysis.isCrisis) {
     return {
       content: `${analysis.opening}\n\n请你现在就做这三件事：\n${analysis.steps
         .map((step, index) => `${index + 1}. ${step}`)
         .join("\n")}\n\n等你先把第一步做到位了，再回来告诉我一声，我会继续陪你往下走。`,
-      analysis: {
-        ...analysis,
-        supportMode: activeMode,
-        supportModeLabel: supportModes[activeMode].label
-      },
-      matchedResources
+      analysis: { ...analysis, ...modeFields },
+      matchedResources: pickResources(resources, analysis)
     };
   }
 
+  let fallbackReason;
   try {
     const aiReply = await callRemoteAi(siteData, conversation, message, analysis, activeMode);
     if (aiReply) {
       return {
         content: aiReply,
-        analysis: {
-          ...analysis,
-          supportMode: activeMode,
-          supportModeLabel: supportModes[activeMode].label
-        },
-        matchedResources
+        analysis: { ...analysis, ...modeFields },
+        matchedResources: pickResources(resources, analysis)
       };
     }
   } catch (error) {
-    return {
-      content: buildLocalReply(message, analysis, conversation, activeMode),
-      analysis: {
-        ...analysis,
-        supportMode: activeMode,
-        supportModeLabel: supportModes[activeMode].label,
-        fallbackReason: error.message
-      },
-      matchedResources
-    };
+    fallbackReason = error.message;
+  }
+
+  const text = normalizeText(message);
+  if (analysis.key === "neutral" && !shortAcknowledgment.test(text) && !greeting.test(text)) {
+    const key = await classifyEmotion(message);
+    const rule = key === "positive" ? positiveRule : categoryRules.find((item) => item.key === key);
+    if (rule) {
+      const { label, categories, steps, opening } = rule;
+      analysis = { ...analysis, key, label, categories, steps, opening, tags: [label], emotionSource: "structbert-tiny" };
+    }
   }
 
   return {
     content: buildLocalReply(message, analysis, conversation, activeMode),
     analysis: {
       ...analysis,
-      supportMode: activeMode,
-      supportModeLabel: supportModes[activeMode].label
+      ...modeFields,
+      ...(fallbackReason === undefined ? {} : { fallbackReason })
     },
-    matchedResources
+    matchedResources: pickResources(resources, analysis)
   };
 }
 
