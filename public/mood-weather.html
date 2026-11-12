@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <meta name="description" content="心港情绪晴雨表：查看你近一周、近一月的情绪变化和状态解释。">
+  <title>心港 | 情绪晴雨表</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-a" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small data-bind="site-tagline">累的时候，也可以来这里</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="站点导航">
+      <a href="/" class="nav-link">首页</a>
+      <a href="/checkin" class="nav-link">情绪签到</a>
+      <a href="/cards" class="nav-link">支持卡</a>
+      <a href="/chat" class="nav-link">陪你聊聊</a>
+    </nav>
+  </header>
+
+  <main class="page-shell page-column">
+    <section class="surface-card page-hero-card page-hero-card--compact">
+      <div>
+        <p class="eyebrow">情绪晴雨表</p>
+        <h1>看看你最近的情绪变化。</h1>
+      </div>
+      <p class="section-copy">这里会按你自己的签到记录，整理出近 7 天和近 30 天的节奏变化。它不是判断你，而是帮你更容易看见自己。</p>
+      <div class="hero-actions">
+        <a href="/checkin" class="button button-primary">继续签到</a>
+        <a href="/chat?mode=listen" class="button button-secondary">带着这些发现去聊天</a>
+      </div>
+    </section>
+
+    <section class="weather-overview-grid">
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">近 7 天</span>
+        <strong id="weekCount">0</strong>
+        <p>签到次数</p>
+      </article>
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">近 30 天</span>
+        <strong id="monthCount">0</strong>
+        <p>签到次数</p>
+      </article>
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">最近一次</span>
+        <strong id="latestMood">暂无</strong>
+        <p>最新记录到的情绪</p>
+      </article>
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">状态参考</span>
+        <strong id="weekAverageText">--</strong>
+        <p>近 7 天精力 / 压力平均值</p>
+      </article>
+    </section>
+
+    <section class="weather-overview-grid weather-overview-grid--dual">
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">7 天对比</span>
+        <strong id="weekCompareText">--</strong>
+        <p>和近 30 天平均相比的状态变化</p>
+      </article>
+      <article class="surface-card weather-overview-card">
+        <span class="card-topline">记录密度</span>
+        <strong id="activeDaysText">--</strong>
+        <p>近 7 天里你有记录的天数</p>
+      </article>
+    </section>
+
+    <section class="surface-card weather-insight-card">
+      <div class="section-heading compact-heading">
+        <div>
+          <p class="eyebrow">AI 解读</p>
+          <h2 id="insightTitle">正在整理你的节奏</h2>
+        </div>
+      </div>
+      <p id="insightSummary" class="section-copy">等这页加载完，这里会出现近一周和近一月的总结。</p>
+      <div id="insightSuggestions" class="bullet-rows"></div>
+    </section>
+
+    <section class="weather-chart-grid">
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">趋势图</p>
+            <h2>近 7 天精力与压力</h2>
+          </div>
+        </div>
+        <div id="weekTrendChart" class="trend-chart-card"></div>
+      </article>
+
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">趋势图</p>
+            <h2>近 30 天精力与压力</h2>
+          </div>
+        </div>
+        <div id="monthTrendChart" class="trend-chart-card"></div>
+      </article>
+    </section>
+
+    <section class="weather-chart-grid">
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">近 7 天</p>
+            <h2>这周的变化</h2>
+          </div>
+        </div>
+        <div id="weekSeries" class="weather-series-list"></div>
+      </article>
+
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">近 30 天</p>
+            <h2>这个月的变化</h2>
+          </div>
+        </div>
+        <div id="monthSeries" class="weather-series-list weather-series-list--dense"></div>
+      </article>
+    </section>
+
+    <section class="weather-chart-grid">
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">情绪分布</p>
+            <h2>近 30 天你更常记录到什么</h2>
+          </div>
+        </div>
+        <div id="moodBreakdown" class="weather-breakdown-list"></div>
+      </article>
+
+      <article class="surface-card">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">最后一条记录</p>
+            <h2>你最近留给自己的话</h2>
+          </div>
+        </div>
+        <p id="latestNote" class="section-copy">还没有补充内容。</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p data-bind="site-name">心港</p>
+    <p id="footerNote">这里更适合慢慢说、慢慢整理；如果你已经不太安全，还是要先让真人来到你身边。</p>
+  </footer>
+
+  <script type="module" src="/mood-weather.js"></script>
+</body>
+</html>

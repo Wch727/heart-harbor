@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <title>心港 | 我的 API</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-a" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small>用户自己的 API 配置</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="页面导航">
+      <a href="/" class="nav-link">首页</a>
+      <a href="/chat" class="nav-link">陪你聊聊</a>
+      <a href="/privacy" class="nav-link">隐私说明</a>
+    </nav>
+  </header>
+
+  <main class="page-shell page-column">
+    <section class="surface-card page-hero-card page-hero-card--compact">
+      <div>
+        <p class="eyebrow">我的 API</p>
+        <h1>用你自己的模型接口聊天。</h1>
+      </div>
+      <p class="section-copy">这里的配置只保存在你当前浏览器，不会写进站点后台。保存后，聊天页会优先使用你自己的接口。</p>
+      <div class="hero-actions">
+        <a href="/chat" class="button button-primary">去聊天页使用</a>
+        <a href="/privacy" class="button button-secondary">查看隐私说明</a>
+      </div>
+    </section>
+
+    <section class="surface-card user-api-status-card">
+      <div>
+        <p class="eyebrow">当前状态</p>
+        <h2 id="activeApiTitle">正在读取当前配置</h2>
+        <p id="activeApiText" class="section-copy">等页面加载完成后，这里会告诉你当前聊天会优先使用哪套 API。</p>
+      </div>
+      <div class="chip-cloud">
+        <span id="activeApiBadge" class="chip">读取中</span>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="section-heading compact-heading">
+        <div>
+          <p class="eyebrow">Local Only</p>
+          <h2>本机配置</h2>
+        </div>
+        <p class="section-copy">你可以开启或关闭自己的 API。关闭后会恢复站点默认方式。</p>
+      </div>
+
+      <div class="preset-grid">
+        <button type="button" class="preset-card" data-preset="moonshot">
+          <strong>Moonshot CN</strong>
+          <span>自动填入 `https://api.moonshot.cn/v1`</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="openai">
+          <strong>OpenAI</strong>
+          <span>自动填入 `https://api.openai.com/v1`</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="openrouter">
+          <strong>OpenRouter</strong>
+          <span>自动填入 `https://openrouter.ai/api/v1`</span>
+        </button>
+      </div>
+
+      <form id="userApiForm" class="stack-form">
+        <label class="switch-row">
+          <input id="userApiEnabled" type="checkbox">
+          <span>启用我自己的 API</span>
+        </label>
+
+        <div class="triple-grid">
+          <label class="field">
+            <span>Base URL</span>
+            <input id="userApiBaseUrl" type="url" placeholder="例如 https://api.moonshot.cn/v1">
+          </label>
+          <label class="field">
+            <span>模型名</span>
+            <input id="userApiModel" type="text" placeholder="例如 kimi-k2.5">
+          </label>
+          <label class="field">
+            <span>API Key</span>
+            <input id="userApiKey" type="password" autocomplete="off" placeholder="输入你自己的 key">
+          </label>
+        </div>
+
+        <label class="field">
+          <span>系统提示词</span>
+          <textarea id="userApiSystemPrompt" rows="5" placeholder="留空会使用站点默认提示词。"></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">保存到本机</button>
+          <button id="testUserApiBtn" class="button button-secondary" type="button">测试连接</button>
+          <button id="clearUserApiBtn" class="button button-secondary" type="button">清除本机 API</button>
+          <p id="userApiStatus" class="status-inline" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+
+      <div class="bullet-rows">
+        <div>
+          <strong>保存在哪里</strong>
+          <p>只保存在你当前浏览器，不会写进站点后台，也不会自动同步给别人。</p>
+        </div>
+        <div>
+          <strong>什么时候生效</strong>
+          <p>保存后直接去聊天页就会优先使用你的配置；关闭或清除后会恢复站点默认方式。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/user-api.js"></script>
+</body>
+</html>

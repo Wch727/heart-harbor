@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <title>心港 | 后台管理</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-b" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small>后台管理与站点配置</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="页面导航">
+      <a href="/" class="nav-link">首页</a>
+      <a href="/chat" class="nav-link">陪伴页</a>
+      <a href="/ai-config" class="nav-link">AI 接入</a>
+      <button id="logoutBtn" class="nav-link nav-link-button" type="button" hidden>退出登录</button>
+    </nav>
+  </header>
+
+  <main class="page-shell admin-shell">
+    <section id="adminApp" hidden>
+      <div class="tabs-row">
+        <button type="button" class="tab-button active" data-panel="overview">概览</button>
+        <button type="button" class="tab-button" data-panel="conversations">会话</button>
+        <button type="button" class="tab-button" data-panel="resources">资源</button>
+        <button type="button" class="tab-button" data-panel="settings">设置</button>
+      </div>
+
+      <section class="admin-panel active" id="panel-overview">
+        <div id="metricsGrid" class="stats-strip"></div>
+        <div class="admin-grid">
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Conversation Radar</p>
+                <h2>最近会话</h2>
+              </div>
+            </div>
+            <div id="recentConversationList" class="stack-cards"></div>
+          </article>
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Mood Snapshot</p>
+                <h2>最近签到</h2>
+              </div>
+            </div>
+            <div id="recentCheckinList" class="stack-cards"></div>
+          </article>
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Distribution</p>
+                <h2>签到情绪分布</h2>
+              </div>
+            </div>
+            <div id="moodBars" class="bars-stack"></div>
+          </article>
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Status Flow</p>
+                <h2>会话状态分布</h2>
+              </div>
+            </div>
+            <div id="statusBars" class="bars-stack"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-panel" id="panel-conversations">
+        <article class="surface-card">
+          <div class="section-heading compact-heading">
+            <div>
+              <p class="eyebrow">Conversations</p>
+              <h2>会话管理</h2>
+            </div>
+            <p class="section-copy">可以在这里查看会话内容、标记状态、补充管理员备注。</p>
+          </div>
+          <p id="conversationStatus" class="status-inline" role="status" aria-live="polite"></p>
+          <div id="conversationList" class="conversation-admin-list"></div>
+        </article>
+      </section>
+
+      <section class="admin-panel" id="panel-resources">
+        <div class="admin-grid">
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Resource Editor</p>
+                <h2>新增或编辑资源</h2>
+              </div>
+              <p class="section-copy">步骤每行一条，保存后前台会同步显示。</p>
+            </div>
+            <form id="resourceForm" class="stack-form">
+              <input id="resourceId" type="hidden">
+              <label class="field">
+                <span>标题</span>
+                <input id="resourceTitle" type="text" maxlength="60" required>
+              </label>
+              <label class="field">
+                <span>分类</span>
+                <input id="resourceCategory" type="text" maxlength="20" placeholder="例如：焦虑">
+              </label>
+              <label class="field">
+                <span>描述</span>
+                <textarea id="resourceDescription" rows="3" maxlength="180"></textarea>
+              </label>
+              <label class="field">
+                <span>步骤</span>
+                <textarea id="resourceSteps" rows="6" placeholder="每行一条步骤"></textarea>
+              </label>
+              <label class="switch-row">
+                <input id="resourceEnabled" type="checkbox" checked>
+                <span>启用这张资源卡</span>
+              </label>
+              <div class="form-actions">
+                <button class="button button-primary" type="submit">保存资源</button>
+                <button id="resourceResetBtn" class="button button-secondary" type="button">清空表单</button>
+                <p id="resourceStatus" class="status-inline" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </article>
+
+          <article class="surface-card">
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Resource Library</p>
+                <h2>现有资源</h2>
+              </div>
+            </div>
+            <div id="resourceAdminList" class="stack-cards"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-panel" id="panel-settings">
+        <article class="surface-card">
+          <div class="section-heading compact-heading">
+            <div>
+              <p class="eyebrow">Site Settings</p>
+              <h2>站点与接口设置</h2>
+            </div>
+            <p class="section-copy">这里可以修改前台文案、危机提醒、AI 配置和管理员密码。</p>
+          </div>
+          <form id="settingsForm" class="stack-form">
+            <div class="triple-grid">
+              <label class="field">
+                <span>站点名称</span>
+                <input id="siteName" type="text" maxlength="30">
+              </label>
+              <label class="field">
+                <span>站点副标题</span>
+                <input id="siteTagline" type="text" maxlength="60">
+              </label>
+              <label class="field">
+                <span>管理员账号</span>
+                <input id="adminUsername" type="text" maxlength="30">
+              </label>
+            </div>
+
+            <label class="field">
+              <span>首页主标题</span>
+              <input id="heroTitleInput" type="text" maxlength="80">
+            </label>
+            <label class="field">
+              <span>首页说明</span>
+              <textarea id="heroTextInput" rows="4" maxlength="220"></textarea>
+            </label>
+            <label class="field">
+              <span>聊天欢迎语</span>
+              <textarea id="chatGreetingInput" rows="4" maxlength="240"></textarea>
+            </label>
+            <label class="field">
+              <span>聊天占位提示</span>
+              <input id="chatPlaceholderInput" type="text" maxlength="120">
+            </label>
+            <label class="field">
+              <span>页脚说明</span>
+              <textarea id="footerNoteInput" rows="3" maxlength="220"></textarea>
+            </label>
+
+            <div class="dual-field">
+              <label class="field">
+                <span>心理援助热线文案</span>
+                <input id="emergencyHotlineInput" type="text" maxlength="80">
+              </label>
+              <label class="field">
+                <span>紧急提醒文案</span>
+                <input id="emergencySecondaryInput" type="text" maxlength="120">
+              </label>
+            </div>
+
+            <label class="field">
+              <span>危机横幅文案</span>
+              <textarea id="crisisBannerInput" rows="3" maxlength="200"></textarea>
+            </label>
+
+            <div class="triple-grid">
+              <label class="field">
+                <span>AI Base URL</span>
+                <input id="aiBaseUrl" type="url">
+              </label>
+              <label class="field">
+                <span>AI 模型</span>
+                <input id="aiModel" type="text">
+              </label>
+              <label class="field">
+                <span>AI API Key</span>
+                <input id="aiApiKey" type="password" autocomplete="off">
+              </label>
+            </div>
+            <p id="aiApiKeyHint" class="section-copy form-help">已保存的密钥不会回显；留空保存时会保持原样。</p>
+
+            <label class="switch-row">
+              <input id="aiEnabled" type="checkbox">
+              <span>启用在线 AI 回复</span>
+            </label>
+
+            <label class="field">
+              <span>AI 系统提示词</span>
+              <textarea id="aiSystemPrompt" rows="5"></textarea>
+            </label>
+
+            <div class="dual-field">
+              <label class="field">
+                <span>危机关键词（每行一个）</span>
+                <textarea id="crisisKeywordsInput" rows="6"></textarea>
+              </label>
+              <label class="field">
+                <span>求助提醒文案</span>
+                <textarea id="trustedContactPromptInput" rows="6"></textarea>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>修改管理员密码</span>
+              <input id="newPasswordInput" type="password" minlength="8" placeholder="留空则不修改">
+            </label>
+
+            <div class="form-actions">
+              <button class="button button-primary" type="submit">保存设置</button>
+              <p id="settingsStatus" class="status-inline" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>

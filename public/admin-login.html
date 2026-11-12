@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <title>心港 | 管理员登录</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-b" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <main class="page-shell admin-shell">
+    <section class="surface-card login-card login-card-quiet">
+      <p class="eyebrow">Administrator Only</p>
+      <h1>这里只给管理员进入</h1>
+      <p class="section-copy">如果你不是站点管理员，这里没有需要你操作的内容。用户对话与后台数据不会公开展示，也不会被普通访问者查看。</p>
+      <form id="loginForm" class="stack-form">
+        <label class="field">
+          <span>管理员账号</span>
+          <input name="username" type="text" required autocomplete="username">
+        </label>
+        <label class="field">
+          <span>管理员密码</span>
+          <input name="password" type="password" required autocomplete="current-password">
+        </label>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">进入后台</button>
+          <a href="/" class="button button-secondary">返回首页</a>
+        </div>
+        <p id="loginStatus" class="status-inline" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="/admin-login.js"></script>
+</body>
+</html>

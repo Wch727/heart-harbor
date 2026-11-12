@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4f1">
+  <meta name="description" content="想说话就聊几句，也可以记下今天的心情，或者在水边坐一会儿。">
+  <title>心港｜在这儿坐一会儿吧</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="home-page">
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small data-bind="site-tagline">累的时候，也可以来这里</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="站点导航">
+      <a href="/support" class="nav-link">陪伴方式</a>
+      <a href="/checkin" class="nav-link">情绪签到</a>
+      <a href="/cards" class="nav-link">支持卡</a>
+      <a href="/privacy" class="nav-link">隐私说明</a>
+      <a href="/chat" class="nav-link">陪你聊聊</a>
+    </nav>
+  </header>
+
+  <main class="page-shell home-main">
+    <section class="home-hero" aria-labelledby="heroTitle">
+      <div class="home-hero__copy">
+        <h1 id="heroTitle">在这儿坐一会儿吧。</h1>
+        <p id="heroText" class="hero-text">
+          想说的话，可以从今天的一件小事说起。今天没什么想说的，也可以点点水面，看一圈涟漪慢慢散开。
+        </p>
+      </div>
+      <button class="home-ripples" id="ripplePond" type="button" hidden>
+        <span class="home-ripples__label">点一下水面</span>
+      </button>
+    </section>
+
+    <nav class="home-choices" aria-label="陪伴工具">
+      <a class="home-choice home-choice--primary" href="/chat?mode=listen">
+        <span class="home-choice__symbol" aria-hidden="true">「 」</span>
+        <strong>开始聊天</strong>
+        <span>今天有什么想说的？</span>
+      </a>
+      <a class="home-choice" href="/checkin">
+        <span class="home-choice__symbol" aria-hidden="true">✓</span>
+        <strong>情绪签到</strong>
+        <span>给今天的心情留个记号。</span>
+      </a>
+      <a class="home-choice" href="/cards">
+        <span class="home-choice__symbol" aria-hidden="true">▤</span>
+        <strong>支持卡</strong>
+        <span>抽空读一张，挑个小办法试试。</span>
+      </a>
+      <a class="home-choice" href="/mood-weather">
+        <span class="home-choice__symbol" aria-hidden="true">☁</span>
+        <strong>情绪晴雨表</strong>
+        <span>回头看看这几天过得怎么样。</span>
+      </a>
+    </nav>
+
+    <section class="home-privacy" aria-labelledby="homePrivacyTitle">
+      <h2 id="homePrivacyTitle">匿名使用</h2>
+      <p id="homePrivacyNote">你的内容默认不会公开展示。</p>
+      <a href="/privacy">查看隐私说明 <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p data-bind="site-name">心港</p>
+    <p id="footerNote">如果你觉得自己现在不安全，请联系一个能来陪你的人。</p>
+  </footer>
+
+  <script type="module" src="/site.js"></script>
+</body>
+</html>

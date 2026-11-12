@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <title>心港 | 陪伴对话</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-a" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small>累的时候，也可以来这里</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="页面导航">
+      <a href="/" class="nav-link">首页</a>
+      <a href="/support" class="nav-link">陪伴方式</a>
+      <a href="/checkin" class="nav-link">情绪签到</a>
+      <a href="/cards" class="nav-link">支持卡</a>
+      <a href="/user-api" class="nav-link">我的 API</a>
+      <a href="/privacy" class="nav-link">隐私说明</a>
+      <button id="resetConversationBtn" class="nav-link nav-link-button" type="button">重新开始</button>
+      <button id="clearLocalTraceBtn" class="nav-link nav-link-button nav-link-minor" type="button">清除本机痕迹</button>
+    </nav>
+  </header>
+
+  <main class="page-shell chat-shell">
+    <aside class="surface-card side-panel">
+      <div class="card-topline">陪伴模式</div>
+      <div id="supportModeButtons" class="support-mode-grid">
+        <button type="button" class="support-mode-button" data-support-mode="listen">
+          <strong>先听我说</strong>
+          <span>先被听见</span>
+        </button>
+        <button type="button" class="support-mode-button" data-support-mode="sort">
+          <strong>帮我理清</strong>
+          <span>把线头理开</span>
+        </button>
+        <button type="button" class="support-mode-button" data-support-mode="calm">
+          <strong>带我缓缓</strong>
+          <span>先慢下来</span>
+        </button>
+        <button type="button" class="support-mode-button" data-support-mode="plan">
+          <strong>给我下一步</strong>
+          <span>只看第一步</span>
+        </button>
+      </div>
+      <p id="supportModeHint" class="section-copy">随时可以切换，不用一次选定。</p>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">当前状态</div>
+      <h2 id="analysisTitle">从你最想说的那一点开始</h2>
+      <p id="analysisText" class="section-copy">不用讲完整，也不用讲对。你先说，我跟着你。</p>
+      <div id="analysisTags" class="chip-cloud"></div>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">快速开始</div>
+      <div class="stack-buttons">
+        <button class="button button-soft starter-btn" type="button" data-starter="我明天有考试，但是现在越复习越慌，脑子完全转不动。">脑子一直停不下来</button>
+        <button class="button button-soft starter-btn" type="button" data-starter="我今天累到什么都不想做，帮我判断一下我是太累了还是在逃避。">我今天真的好累</button>
+        <button class="button button-soft starter-btn" type="button" data-starter="我和朋友有点不愉快，脑子里一直在回放，帮我理清楚。">关系里卡住了</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">如果你现在已经很难撑</div>
+      <p class="section-copy">你可以先继续跟我说。只有当你已经觉得自己不太安全时，才需要看下面这条提醒。</p>
+      <div id="chatSafetyCard" class="safety-card" hidden>
+        <p class="support-note" data-site-text="crisisBanner">如果你已经有伤害自己或他人的风险，请先联系真人帮助，不要独自承受。</p>
+        <p class="emergency-note" data-site-text="emergencyHotline">全国统一心理援助热线 12356</p>
+        <p class="section-copy" data-site-text="emergencySecondary">若存在即时危险，请立刻联系 110 / 120 或你身边可信任的人。</p>
+      </div>
+      <details id="chatSafetyDetails" class="safety-disclosure safety-disclosure--compact">
+        <summary>只在你需要的时候，点开这条求助提醒</summary>
+        <div class="safety-disclosure__body">
+          <p class="section-copy" data-site-text="crisisBanner">如果你已经有伤害自己或他人的风险，请先联系真人帮助，不要独自承受。</p>
+          <p class="emergency-note" data-site-text="emergencyHotline">全国统一心理援助热线 12356</p>
+          <p class="section-copy" data-site-text="emergencySecondary">若存在即时危险，请立刻联系 110 / 120 或你身边可信任的人。</p>
+        </div>
+      </details>
+    </aside>
+
+    <section class="surface-card chat-card">
+      <div class="chat-header">
+        <div>
+          <p class="eyebrow">陪伴对话</p>
+          <h1>现在想说什么？</h1>
+        </div>
+        <p id="chatStatus" class="status-inline">我在，你慢慢说。</p>
+      </div>
+
+      <div class="chat-utility-row">
+        <span id="activeApiIndicator" class="utility-chip utility-chip-static">正在读取当前接口</span>
+        <a href="/checkin" class="utility-chip">去做签到</a>
+        <a href="/mood-weather" class="utility-chip">看情绪晴雨表</a>
+        <a href="/cards" class="utility-chip">拿支持卡</a>
+        <a href="/user-api" class="utility-chip">我的 API</a>
+      </div>
+
+      <div class="warm-room-banner">
+        <span id="supportModeBadge" class="warm-mode-pill">先听我说</span>
+        <p id="modeSceneNote" class="mode-scene-note">这会儿我们先不急着分析，先把你接住。</p>
+        <div class="presence-row">
+          <span class="presence-dot" aria-hidden="true"></span>
+          <span>我会先回应你的感受，再和你一起往前走一点。</span>
+        </div>
+      </div>
+
+      <div id="chatFeed" class="chat-feed" aria-live="polite"></div>
+
+      <div class="chat-composer-shell">
+        <form id="chatForm" class="chat-form chat-form--refined">
+          <div class="composer-top-row">
+            <label class="field compact-field composer-name-field">
+              <span>称呼</span>
+              <input id="nicknameInput" type="text" maxlength="24" placeholder="可选">
+            </label>
+            <div class="composer-hint-chip">支持匿名</div>
+          </div>
+          <label class="field chat-composer-field">
+            <span class="sr-only">现在想说什么</span>
+            <textarea id="messageInput" rows="4" maxlength="1200" placeholder="从最难受、最卡住、最想逃开的那一件事开始就好。"></textarea>
+          </label>
+          <div class="composer-action-row">
+            <p id="composerNote" class="composer-note">短短一句也可以。比如 “我今天真的有点撑不住了”。</p>
+            <button id="sendBtn" type="submit" class="button button-primary">发送</button>
+          </div>
+        </form>
+        <p id="chatPrivacyNote" class="privacy-inline-note">你可以匿名使用，这段对话不会公开展示；当前默认只保存在本站本地。</p>
+      </div>
+    </section>
+
+    <aside class="surface-card side-panel">
+      <div class="card-topline">支持卡</div>
+      <div id="matchedResources" class="stack-cards"></div>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">其他入口</div>
+      <div class="stack-buttons">
+        <a href="/support" class="button button-soft">看看陪伴方式</a>
+        <a href="/checkin" class="button button-soft">去做情绪签到</a>
+        <a href="/mood-weather" class="button button-soft">看情绪晴雨表</a>
+        <a href="/cards" class="button button-soft">拿一张支持卡</a>
+        <a href="/privacy" class="button button-soft">看看隐私说明</a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">今晚的小约定</div>
+      <div class="stack-cards">
+        <div class="admin-resource-card soft-agreement-card">
+          <strong>你不用把事情一次讲完</strong>
+          <p>说到哪儿算哪儿，停下来也可以。</p>
+        </div>
+        <div class="admin-resource-card soft-agreement-card">
+          <strong>你随时可以换一种方式</strong>
+          <p>想被听见、想理清、想缓缓，或者只想要下一步，都可以切。</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-topline">这段话走到哪里了</div>
+      <div id="conversationMeta" class="meta-stack">
+        <div><strong>目前的节奏</strong><span>尚未开始</span></div>
+        <div><strong>最后更新</strong><span>等待第一条消息</span></div>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="/chat.js"></script>
+</body>
+</html>

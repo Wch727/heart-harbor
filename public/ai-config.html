@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <title>心港 | AI 接入配置</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-b" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small>AI 接入与模型配置</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="页面导航">
+      <a href="/admin" class="nav-link">后台首页</a>
+      <a href="/chat" class="nav-link">陪伴页</a>
+      <button id="logoutBtn" class="nav-link nav-link-button" type="button" hidden>退出登录</button>
+    </nav>
+  </header>
+
+  <main class="page-shell page-column">
+    <section id="aiConfigApp" class="surface-card page-hero-card" hidden>
+      <div>
+        <p class="eyebrow">AI 接入配置</p>
+        <h1>在这里单独配置模型接口。</h1>
+      </div>
+      <p class="section-copy">这个页面只负责 API 接入。你可以单独设置 Base URL、模型名、API Key、系统提示词和启用状态，不用再去后台设置页里翻。</p>
+    </section>
+
+    <section id="aiConfigPanel" class="surface-card" hidden>
+      <div class="section-heading compact-heading">
+        <div>
+          <p class="eyebrow">Connection Settings</p>
+          <h2>接口信息</h2>
+        </div>
+        <p class="section-copy">已保存的 key 不会回显；留空保存时会保持原样。</p>
+      </div>
+
+      <form id="aiConfigForm" class="stack-form">
+        <div class="triple-grid">
+          <label class="field">
+            <span>AI Base URL</span>
+            <input id="aiBaseUrl" type="url">
+          </label>
+          <label class="field">
+            <span>AI 模型</span>
+            <input id="aiModel" type="text">
+          </label>
+          <label class="field">
+            <span>AI API Key</span>
+            <input id="aiApiKey" type="password" autocomplete="off">
+          </label>
+        </div>
+
+        <p id="aiApiKeyHint" class="section-copy form-help">已保存的密钥不会回显；留空保存时会保持原样。</p>
+
+        <label class="switch-row">
+          <input id="aiEnabled" type="checkbox">
+          <span>启用在线 AI 回复</span>
+        </label>
+
+        <label class="field">
+          <span>AI 系统提示词</span>
+          <textarea id="aiSystemPrompt" rows="6"></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">保存 API 配置</button>
+          <a href="/admin" class="button button-secondary">返回后台</a>
+          <p id="aiConfigStatus" class="status-inline" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="/ai-config.js"></script>
+</body>
+</html>

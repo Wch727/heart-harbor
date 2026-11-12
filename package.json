@@ -1,0 +1,11 @@
+{
+  "name": "emotional-companion-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "情感陪伴网站，包含前台、聊天页、后台和本地数据存储。",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/run-tests.js"
+  }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe6">
+  <meta name="description" content="心港支持卡：先缓一缓、先理一理、先拿到能马上用的小动作。">
+  <title>心港 | 支持卡</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="theme-shell">
+  <div class="background-orb background-orb-b" aria-hidden="true"></div>
+  <div class="background-orb background-orb-c" aria-hidden="true"></div>
+  <div class="background-grid" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="/" class="brand-mark">
+      <span class="brand-mark__icon">心</span>
+      <span>
+        <strong data-bind="site-name">心港</strong>
+        <small data-bind="site-tagline">累的时候，也可以来这里</small>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="站点导航">
+      <a href="/" class="nav-link">首页</a>
+      <a href="/support" class="nav-link">陪伴方式</a>
+      <a href="/checkin" class="nav-link">情绪签到</a>
+      <a href="/privacy" class="nav-link">隐私说明</a>
+      <a href="/chat" class="nav-link">陪你聊聊</a>
+    </nav>
+  </header>
+
+  <main class="page-shell page-column">
+    <section class="surface-card page-hero-card">
+      <div>
+        <p class="eyebrow">不一定非要先说出来</p>
+        <h1>先拿一张此刻用得上的支持卡。</h1>
+      </div>
+      <p class="section-copy">这些不是大道理，而是那种你现在就能点开、看一眼、马上试一下的小东西。你可以先缓一缓，再决定要不要继续聊。</p>
+      <div class="hero-actions">
+        <a href="/chat?mode=calm" class="button button-primary">我想边聊边看</a>
+        <a href="/checkin" class="button button-secondary">我先做个签到</a>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="section-heading compact-heading">
+        <div>
+          <p class="eyebrow">按你现在更需要的来筛</p>
+          <h2>支持卡分类</h2>
+        </div>
+        <p id="resourceCountNote" class="section-copy">先点一个按钮，页面会只留下更贴近你的卡片。</p>
+      </div>
+      <div id="resourceFilterRow" class="tabs-row"></div>
+      <div id="resourceGrid" class="resource-grid"></div>
+    </section>
+
+    <section class="support-lane-grid support-lane-grid--compact">
+      <article class="surface-card support-lane-card">
+        <h3>想有人陪着用</h3>
+        <p class="section-copy">如果你不想一个人消化这些卡，也可以带着它们去聊天页。</p>
+        <div class="hero-actions">
+          <a href="/chat?mode=listen" class="button button-primary">带着卡去聊天</a>
+          <a href="/support" class="button button-secondary">先看陪伴方式</a>
+        </div>
+      </article>
+      <article class="surface-card support-lane-card">
+        <h3>想先记一下状态</h3>
+        <p class="section-copy">如果你只是想给今晚留个标记，也可以先去签到。</p>
+        <div class="hero-actions">
+          <a href="/checkin" class="button button-primary">去情绪签到</a>
+          <a href="/privacy" class="button button-secondary">看看隐私说明</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p data-bind="site-name">心港</p>
+    <p id="footerNote">这里更适合慢慢说、慢慢整理；如果你已经不太安全，还是要先让真人来到你身边。</p>
+  </footer>
+
+  <script type="module" src="/cards.js"></script>
+</body>
+</html>
