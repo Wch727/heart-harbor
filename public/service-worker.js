@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "companion-hub-";
-const CACHE_NAME = `${CACHE_PREFIX}v20`;
+const CACHE_NAME = `${CACHE_PREFIX}v21`;
 const ASSETS = new Set([
   "/",
   "/index.html",
@@ -24,6 +24,7 @@ const ASSETS = new Set([
   "/checkin.js",
   "/mood-weather.js",
   "/user-api.js",
+  "/ai-presets.js",
   "/cards.js",
   "/privacy.js",
   "/chat.js",

@@ -61,30 +61,11 @@
         <p class="section-copy">你可以开启或关闭自己的 API。关闭后会恢复站点默认方式。</p>
       </div>
 
-      <div class="preset-grid">
-        <button type="button" class="preset-card" data-preset="moonshot">
-          <strong>Kimi K3.1 Pro</strong>
-          <span>月之暗面官方接口</span>
-        </button>
-        <button type="button" class="preset-card" data-preset="deepseekFlash">
-          <strong>DeepSeek Flash</strong>
-          <span>适合日常短对话</span>
-        </button>
-        <button type="button" class="preset-card" data-preset="deepseekPro">
-          <strong>DeepSeek V4 Pro</strong>
-          <span>DeepSeek 官方接口</span>
-        </button>
-        <button type="button" class="preset-card" data-preset="openai">
-          <strong>OpenAI</strong>
-          <span>自动填入 `https://api.openai.com/v1`</span>
-        </button>
-        <button type="button" class="preset-card" data-preset="openrouter">
-          <strong>OpenRouter</strong>
-          <span>自动填入 `https://openrouter.ai/api/v1`</span>
-        </button>
-      </div>
-
       <form id="userApiForm" class="stack-form">
+        <label class="field">
+          <span>模型预设</span>
+          <select id="userApiPreset"><option value="">选择模型，或在下方填写自定义接口</option></select>
+        </label>
         <label class="switch-row">
           <input id="userApiEnabled" type="checkbox">
           <span>启用我自己的 API</span>
@@ -97,7 +78,7 @@
           </label>
           <label class="field">
             <span>模型名</span>
-            <input id="userApiModel" type="text" placeholder="例如 kimi-k2.5">
+            <input id="userApiModel" type="text" placeholder="例如 deepseek-flash">
           </label>
           <label class="field">
             <span>API Key</span>

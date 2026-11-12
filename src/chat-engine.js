@@ -315,6 +315,32 @@ async function callRemoteAi(siteData, conversation, message, analysis, supportMo
   if (hostname === "api.deepseek.com" && ["deepseek-flash", "deepseek-v4-pro"].includes(model)) {
     requestBody.thinking = { type: "disabled" };
   }
+  if (hostname === "api.openai.com" && model.startsWith("gpt-6")) {
+    delete requestBody.max_tokens;
+    requestBody.max_completion_tokens = 2048;
+    requestBody.reasoning_effort = "low";
+  }
+  if (hostname === "generativelanguage.googleapis.com" && model.startsWith("gemini-3")) {
+    requestBody.max_tokens = 2048;
+    requestBody.reasoning_effort = "low";
+  }
+  if (hostname === "dashscope.aliyuncs.com" && model.startsWith("qwen3.8-")) {
+    requestBody.enable_thinking = false;
+  }
+  if (hostname === "open.bigmodel.cn" && model === "glm-5.3") {
+    requestBody.reasoning_effort = "low";
+    requestBody.max_tokens = 2048;
+  }
+  if (hostname === "api.minimax.io" && model === "minimax-m3.1-flash") {
+    delete requestBody.max_tokens;
+    requestBody.max_completion_tokens = 2048;
+    requestBody.reasoning_effort = "low";
+    requestBody.reasoning_split = true;
+  }
+  if (["api.anthropic.com", "api.x.ai", "api.xiaomimimo.com", "ark.cn-beijing.volces.com",
+    "qianfan.baidubce.com", "api.mistral.ai", "openrouter.ai"].includes(hostname)) {
+    requestBody.max_tokens = 2048;
+  }
 
   const response = await fetch(endpoint, {
     method: "POST",

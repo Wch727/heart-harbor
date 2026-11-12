@@ -1,4 +1,5 @@
 import { api, bindSiteName, registerServiceWorker, setInlineStatus } from "./shared.js";
+import { bindAiPresets } from "./ai-presets.js";
 
 const logoutBtn = document.getElementById("logoutBtn");
 const aiConfigApp = document.getElementById("aiConfigApp");
@@ -13,7 +14,7 @@ function renderSettings(settings) {
   document.getElementById("aiApiKey").value = "";
   document.getElementById("aiApiKey").placeholder = settings.ai.hasApiKey ? "已保存，如需更换再输入新的 key" : "当前还没有设置 key";
   document.getElementById("aiApiKeyHint").textContent = settings.ai.hasApiKey
-    ? "当前已保存密钥。留空保存时不会覆盖原来的 key。"
+    ? "当前已保存密钥。接口地址相同时，留空可沿用原密钥。"
     : "当前还没有保存密钥。输入后保存即可启用。";
   document.getElementById("aiEnabled").checked = Boolean(settings.ai.enabled);
   document.getElementById("aiSystemPrompt").value = settings.ai.systemPrompt || "";
@@ -25,6 +26,19 @@ async function loadSettings() {
 }
 
 function bindForm() {
+  bindAiPresets(document.getElementById("aiPreset"), {
+    baseUrlInput: document.getElementById("aiBaseUrl"),
+    modelInput: document.getElementById("aiModel"),
+    keyInput: document.getElementById("aiApiKey"),
+    onSelect(preset, endpointChanged) {
+      setInlineStatus(aiConfigStatus, `已填入 ${preset.label}。确认配置后保存。`, "info");
+      if (endpointChanged) {
+        document.getElementById("aiApiKey").placeholder = "输入新接口的 API Key";
+        document.getElementById("aiApiKeyHint").textContent = "切换接口地址时，请填写对应的新密钥。";
+      }
+    }
+  });
+
   document.getElementById("aiConfigForm").addEventListener("submit", async (event) => {
     event.preventDefault();
 

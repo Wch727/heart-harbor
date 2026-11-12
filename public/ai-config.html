@@ -47,6 +47,10 @@
       </div>
 
       <form id="aiConfigForm" class="stack-form">
+        <label class="field">
+          <span>模型预设</span>
+          <select id="aiPreset"><option value="">选择模型，或在下方填写自定义接口</option></select>
+        </label>
         <div class="triple-grid">
           <label class="field">
             <span>AI Base URL</span>
@@ -62,7 +66,7 @@
           </label>
         </div>
 
-        <p id="aiApiKeyHint" class="section-copy form-help">已保存的密钥不会回显；留空保存时会保持原样。</p>
+        <p id="aiApiKeyHint" class="section-copy form-help">切换到新服务时，请填写该服务的密钥。</p>
 
         <label class="switch-row">
           <input id="aiEnabled" type="checkbox">

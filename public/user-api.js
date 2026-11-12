@@ -1,35 +1,9 @@
 import { api, bindSiteName, registerServiceWorker, setInlineStatus } from "./shared.js";
+import { bindAiPresets } from "./ai-presets.js";
 
 const USER_API_STORAGE_KEY = "companion-user-api-config";
 const userApiStatus = document.getElementById("userApiStatus");
 let siteConfig = null;
-const presetMap = {
-  moonshot: {
-    label: "Kimi K3.1 Pro",
-    baseUrl: "https://api.moonshot.cn/v1",
-    model: "kimi-k3.1-pro"
-  },
-  deepseekFlash: {
-    label: "DeepSeek Flash",
-    baseUrl: "https://api.deepseek.com",
-    model: "deepseek-flash"
-  },
-  deepseekPro: {
-    label: "DeepSeek V4 Pro",
-    baseUrl: "https://api.deepseek.com",
-    model: "deepseek-v4-pro"
-  },
-  openai: {
-    label: "OpenAI",
-    baseUrl: "https://api.openai.com/v1",
-    model: "gpt-4.1-mini"
-  },
-  openrouter: {
-    label: "OpenRouter",
-    baseUrl: "https://openrouter.ai/api/v1",
-    model: "openai/gpt-4.1-mini"
-  }
-};
 
 function readUserApiConfig() {
   try {
@@ -107,20 +81,6 @@ function renderForm(config = null) {
   renderActiveStatus(config);
 }
 
-function applyPreset(presetKey) {
-  const preset = presetMap[presetKey];
-  if (!preset) return;
-  const baseUrlInput = document.getElementById("userApiBaseUrl");
-  if (baseUrlInput.value.trim().replace(/\/+$/, "") !== preset.baseUrl) {
-    document.getElementById("userApiKey").value = "";
-  }
-  baseUrlInput.value = preset.baseUrl;
-  document.getElementById("userApiModel").value = preset.model;
-  document.getElementById("userApiEnabled").checked = true;
-  setInlineStatus(userApiStatus, `已填入 ${preset.label}。确认使用这家服务的 API Key 后，就可以测试连接。`, "info");
-  renderActiveStatus(getCurrentFormConfig());
-}
-
 function refreshFromStorage() {
   const nextConfig = readUserApiConfig();
   renderForm(nextConfig);
@@ -135,8 +95,15 @@ async function init() {
 
   renderForm(readUserApiConfig());
 
-  document.querySelectorAll("[data-preset]").forEach((button) => {
-    button.addEventListener("click", () => applyPreset(button.dataset.preset));
+  bindAiPresets(document.getElementById("userApiPreset"), {
+    baseUrlInput: document.getElementById("userApiBaseUrl"),
+    modelInput: document.getElementById("userApiModel"),
+    keyInput: document.getElementById("userApiKey"),
+    onSelect(preset) {
+      document.getElementById("userApiEnabled").checked = true;
+      setInlineStatus(userApiStatus, `已填入 ${preset.label}。填好对应的 API Key 后可以测试连接。`, "info");
+      renderActiveStatus(getCurrentFormConfig());
+    }
   });
 
   document.getElementById("userApiForm").addEventListener("input", () => {
@@ -180,7 +147,6 @@ async function init() {
     }
   });
 
-  window.addEventListener("focus", refreshFromStorage);
 }
 
 init().catch((error) => {

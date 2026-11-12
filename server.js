@@ -711,7 +711,14 @@ async function handleAdminUpdateSettings(request, response) {
   };
   const submittedApiKey =
     typeof payload.ai?.apiKey === "string" ? String(payload.ai.apiKey).trim() : undefined;
-  nextAi.apiKey = submittedApiKey ? submittedApiKey : siteData.ai.apiKey;
+  const previousBaseUrl = String(siteData.ai.baseUrl || "").trim().replace(/\/+$/, "");
+  const nextBaseUrl = String(nextAi.baseUrl || "").trim().replace(/\/+$/, "");
+  const endpointChanged = previousBaseUrl !== nextBaseUrl;
+  if (endpointChanged && nextAi.enabled && !submittedApiKey) {
+    sendError(response, 400, "切换接口地址时，请填写新接口的 API Key。");
+    return;
+  }
+  nextAi.apiKey = submittedApiKey || (endpointChanged ? "" : siteData.ai.apiKey);
   siteData.ai = nextAi;
 
   if (payload.admin?.username) {

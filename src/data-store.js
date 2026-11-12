@@ -64,8 +64,8 @@ function buildDefaultSiteData() {
     },
     ai: {
       enabled: false,
-      baseUrl: "https://api.moonshot.cn/v1",
-      model: "kimi-k2.5",
+      baseUrl: "https://api.deepseek.com",
+      model: "deepseek-flash",
       apiKey: "",
       systemPrompt:
         "你是中文情感陪伴助手。先接住用户情绪，再给出 1 到 3 个具体可执行的小动作；避免空泛说教。遇到自伤或他伤风险时，优先引导用户联系真人和紧急援助。"
