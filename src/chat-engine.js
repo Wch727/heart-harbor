@@ -3,8 +3,8 @@ const categoryRules = [
     key: "anxiety",
     label: "焦虑",
     categories: ["焦虑", "学业"],
-    keywords: ["焦虑", "慌", "紧张", "担心", "不安", "考试", "deadline", "来不及", "压力"],
-    opening: "我先接住你这股很紧、很想立刻逃开的感觉。你不是不行，只是神经已经绷得太久了。",
+    keywords: ["焦虑", "慌", "紧张", "担心", "不安", "来不及", "压力很大", "压力太大", "压力大"],
+    opening: "这件事让你有点放心不下。",
     steps: [
       "先把呼吸拉慢一点，吸气 4 秒，呼气 6 秒，连续做 5 轮。",
       "把你最担心的事缩成一句话，避免脑子里一团乱。",
@@ -16,7 +16,7 @@ const categoryRules = [
     label: "疲惫",
     categories: ["疲惫"],
     keywords: ["累", "疲惫", "没劲", "不想动", "撑不住", "麻木", "什么都不想做", "空掉"],
-    opening: "听起来你不是不想做，而是真的被耗空了。现在最重要的不是逼自己振作，而是先让自己少再消耗一点。",
+    opening: "听起来你已经很累了，连开始做点什么都费劲。",
     steps: [
       "先补水、换个姿势、让身体感受到一点点被照顾。",
       "今天只保留一件必须做的事，其余先放过自己。",
@@ -27,8 +27,8 @@ const categoryRules = [
     key: "insomnia",
     label: "失眠",
     categories: ["失眠"],
-    keywords: ["睡不着", "失眠", "凌晨", "夜里", "脑子停不下来", "半夜", "晚上"],
-    opening: "深夜的时候，情绪会被放大很多。先别急着想通全部问题，我们只做降低唤醒这一步。",
+    keywords: ["睡不着", "失眠", "睡不好", "难入睡", "入睡困难", "一夜没睡", "半夜醒", "反复醒"],
+    opening: "想睡却睡不好，确实磨人。",
     steps: [
       "把最刺激的信息源关掉 10 分钟，包括聊天和短视频。",
       "把脑子里的担心写成三条短句，写出来就先不继续想。",
@@ -39,8 +39,8 @@ const categoryRules = [
     key: "relationship",
     label: "关系拉扯",
     categories: ["关系"],
-    keywords: ["朋友", "对象", "家人", "吵架", "冷战", "误会", "关系", "聊天记录", "被忽视"],
-    opening: "关系里的不舒服最容易让人反复回放。我们先把事情理清，再决定要不要回应。",
+    keywords: ["吵架", "冷战", "误会", "没回我", "不回我", "不理我", "被忽视", "分手", "闹别扭", "闹矛盾"],
+    opening: "这段相处里，好像有些事还留在你心里。",
     steps: [
       "先分开事实、你的猜测和你的感受。",
       "问自己：我最希望被理解的是哪一句话。",
@@ -51,8 +51,8 @@ const categoryRules = [
     key: "overwhelm",
     label: "压得喘不过气",
     categories: ["学业", "疲惫"],
-    keywords: ["崩溃", "好多事", "做不完", "卡住", "拖延", "内耗", "乱", "开始不了"],
-    opening: "现在更像是事情太多，把你整个人压住了。我们不需要一下子把人生理顺，只先找一个切口。",
+    keywords: ["崩溃", "好多事", "做不完", "卡住", "拖延", "内耗", "脑子乱", "脑子很乱", "心里乱", "顾不过来", "开始不了"],
+    opening: "几件事挤在一起，光是想从哪儿开始就挺费劲。",
     steps: [
       "把所有任务写成三个词，不展开，不求完整。",
       "从里面挑最小、最不痛的一件，只做 5 分钟版本。",
@@ -64,7 +64,7 @@ const categoryRules = [
     label: "低落",
     categories: ["求助"],
     keywords: ["难过", "失落", "委屈", "沮丧", "想哭", "心情不好", "提不起劲", "孤单"],
-    opening: "我在。你现在不用急着把自己劝好，先让这份难过被看见就已经很重要了。",
+    opening: "听起来，这会儿心里有点沉。",
     steps: [
       "先给这种感受起个名字，例如难过、委屈、失望。",
       "做一件能证明你在照顾自己的小动作，比如喝水、洗脸、换衣服。",
@@ -72,6 +72,11 @@ const categoryRules = [
     ]
   }
 ];
+
+const neutralRule = { key: "neutral", label: "还在了解", categories: [], steps: [], opening: "" };
+const positiveRule = { key: "positive", label: "开心", categories: [], steps: [], opening: "" };
+const positiveKeywords = ["开心", "高兴", "快乐", "满足", "松了口气", "好消息", "心情很好", "挺顺利"];
+const shortAcknowledgment = /^(嗯+|哦+|好|好的|对|是啊|是的|还是那样|还是这样|说不清)[。！!…\s]*$/;
 
 const supportModes = {
   listen: {
@@ -97,20 +102,32 @@ function normalizeText(text = "") {
 }
 
 function normalizeSupportMode(mode = "") {
-  return supportModes[mode] ? mode : "listen";
+  return Object.hasOwn(supportModes, mode) ? mode : "listen";
+}
+
+function hasEmotionKeyword(text, keyword) {
+  let start = text.indexOf(keyword);
+  while (start !== -1) {
+    const prefix = text.slice(0, start);
+    if (!/(?:不太|并不|不是很|没有|没那么|不再|不怎么|不|没)$/.test(prefix)) return true;
+    start = text.indexOf(keyword, start + keyword.length);
+  }
+  return false;
 }
 
 function findRule(text) {
-  const normalized = normalizeText(text);
+  const normalized = normalizeText(text).replace(/积累|累积|累计|累赘|连累/g, " ");
 
   const scored = categoryRules
     .map((rule) => ({
       rule,
-      score: rule.keywords.reduce((total, keyword) => total + (normalized.includes(keyword.toLowerCase()) ? 1 : 0), 0)
+      score: rule.keywords.reduce((total, keyword) => total + Number(hasEmotionKeyword(normalized, keyword)), 0)
     }))
     .sort((left, right) => right.score - left.score);
 
-  return scored[0]?.score > 0 ? scored[0].rule : categoryRules[0];
+  if (scored[0]?.score > 0) return scored[0].rule;
+  if (positiveKeywords.some((keyword) => hasEmotionKeyword(normalized, keyword))) return positiveRule;
+  return neutralRule;
 }
 
 function analyzeMessage(text, siteData) {
@@ -123,7 +140,7 @@ function analyzeMessage(text, siteData) {
     label: matchedCrisisKeyword ? "危机风险" : rule.label,
     key: matchedCrisisKeyword ? "crisis" : rule.key,
     isCrisis: Boolean(matchedCrisisKeyword),
-    tags: matchedCrisisKeyword ? ["需要真人帮助", "优先保证安全"] : [rule.label, "先稳住再处理"],
+    tags: matchedCrisisKeyword ? ["需要真人帮助", "优先保证安全"] : rule.key === "neutral" ? [] : [rule.label],
     steps: matchedCrisisKeyword
       ? [
           `先联系 ${siteData.site.emergencyHotline}，或者先去找一个能立刻到你身边的人。`,
@@ -145,95 +162,51 @@ function pickResources(resources, analysis) {
     .slice(0, 2);
 }
 
-function buildReflection(analysis) {
-  const reflections = {
-    anxiety: "像是心里一直绷着，越想越紧，脑子根本停不下来。",
-    burnout: "像是整个人已经被耗住了，哪怕只是开始一下都很费劲。",
-    insomnia: "像是夜里越安静，脑子反而越吵，很多东西停不下来。",
-    relationship: "像是事情已经过去了，可心里还在一遍一遍回放那些细节。",
-    overwhelm: "像是眼前的事挤成一团，连从哪里下手都变得很难。",
-    low: "像是心里闷着一团东西，很想被理解一下，又不知道从哪说起。"
-  };
+const localPrompts = {
+  anxiety: { listen: "你最担心的是哪一件事？", sort: "可以先分开两件事：已经发生的，和你担心接下来会发生的。哪边更让你挂心？", plan: "先写下最担心的一件事，看看里面有没有一个你现在能确认的问题。" },
+  burnout: { listen: "今天哪一段最耗你的力气？", sort: "想做却没力气，和有力气却不想做，听起来很像。你这会儿更接近哪一种？", plan: "看看今天有没有一件事可以改到明天。能少做一件，就先给自己留点余地。" },
+  insomnia: { listen: "躺下以后，最让你睡不着的是什么？", sort: "是很久睡不着，还是睡着后容易醒？可以先说更困扰你的那个。", plan: "如果有一件明天要办的事一直在脑子里转，可以把它写下来，留到明天再看。" },
+  relationship: { listen: "这件事里，哪句话或哪个瞬间让你最在意？", sort: "我们可以先从你确定发生的一件事说起。对方当时说了什么，或者做了什么？", plan: "如果想和对方说点什么，可以先把最想让对方听懂的一句话写在草稿里，等会儿再决定要不要发。" },
+  overwhelm: { listen: "要是只挑一件说说，哪件事最占你的心思？", sort: "可以先把手头的事分成今天得处理的、可以晚点再看的。第一类里有哪一件？", plan: "从最急的一件事里挑一个能马上开始的动作，比如打开文件、写个标题。先做到这里就够了。" },
+  low: { listen: "要是想说说，今天哪一刻最不好受？", sort: "可以先回想一下，这种感觉是在一件事之后冒出来的，还是今天一直都在？", plan: "如果你想让身边的人知道，可以只发一句「今天有点难过，方便陪我说几句吗？」" }
+};
 
-  return reflections[analysis.key] || "像是心里有一团东西压着你，让你很难轻松下来。";
-}
+const calmPrompt = "如果方便，可以把脚放在地上，留意一下脚底踩着的地方。坐一会儿，按你平常的节奏呼吸就好。";
 
-function buildResourceNudge(matchedResources, prefix = "如果你想") {
-  if (!matchedResources.length) return "";
-  return `\n\n${prefix}，我也可以带你试试「${matchedResources[0].title}」：${matchedResources[0].description}`;
-}
+function buildLocalReply(message, analysis, conversation, mode) {
+  const text = normalizeText(message);
+  const history = conversation?.messages || [];
+  const lastReply = history.findLast((item) => item.role === "assistant")?.content;
+  const priorUserMessage = history.findLast((item) => item.role === "user" && normalizeText(item.content) !== text);
+  const continuing = Boolean(priorUserMessage);
+  let reply;
 
-function buildListenReply(analysis, matchedResources) {
-  return [
-    analysis.opening,
-    "",
-    "这次我先不急着给办法，先陪你把这团感受放到桌面上。",
-    buildReflection(analysis),
-    "",
-    "如果你愿意，可以接着告诉我：这件事里，最让你难受的是哪一个瞬间，或者哪一句你最想被别人听懂的话？",
-    buildResourceNudge(matchedResources, "如果等会儿你想要一点点工具")
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
+  if (analysis.key === "positive") {
+    reply = "听起来今天有件让你开心的事。你最想记住的是哪一刻？";
+  } else if (shortAcknowledgment.test(text) && continuing) {
+    reply = "可以慢慢想。要是还想聊刚才那件事，想到哪儿就从哪儿说。";
+  } else if (/^(你好|嗨|哈喽|hello|hi)[。！!\s]*$/.test(text)) {
+    reply = "你好呀。今天有什么想聊的？";
+  } else if (analysis.key === "neutral") {
+    reply = {
+      listen: "你可以从今天的一件小事说起，也可以说说现在是什么心情。",
+      sort: "我们从一件具体的事开始吧。你想先理一理哪件事？",
+      calm: calmPrompt,
+      plan: "你现在最想做成哪一件小事？知道是什么之后，我们再挑一个能开始的动作。"
+    }[mode];
+  } else {
+    const prompt = mode === "calm" ? calmPrompt : localPrompts[analysis.key][mode];
+    reply = `${analysis.opening}${prompt}`;
+  }
 
-function buildSortReply(analysis, matchedResources) {
-  return [
-    analysis.opening,
-    "",
-    "我们先不判断谁对谁错，只把这件事理清一点点。",
-    "你可以只按这三个小格子来说：",
-    "1. 发生了什么",
-    "2. 你当下最真实的感受是什么",
-    "3. 你现在最需要的到底是什么",
-    "",
-    "你愿意先从第一格开始，说一句就行。",
-    buildResourceNudge(matchedResources, "如果你想按更有结构的方式来")
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-function buildCalmReply(analysis, matchedResources) {
-  const steps = analysis.steps.map((step, index) => `${index + 1}. ${step}`).join("\n");
-  return [
-    analysis.opening,
-    "",
-    "这会儿先不分析，我们先把身体带回来一点。",
-    steps,
-    "",
-    "做完以后你只要告诉我一句：现在是心口、胃里，还是脑子最紧，我就接着陪你。",
-    buildResourceNudge(matchedResources, "如果你想让我直接带着你做")
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-function buildPlanReply(message, analysis, matchedResources) {
-  return [
-    analysis.opening,
-    "",
-    "我们今晚不求解决全部，只求往前挪半步。",
-    `先把“${message.slice(0, 18)}${message.length > 18 ? "…" : ""}”缩成一个 10 分钟版本。`,
-    "你可以从这三个方向里挑一个：",
-    "1. 先做最小的一步",
-    "2. 先处理最急的一件",
-    "3. 先休息 10 分钟，再回来继续",
-    "",
-    "如果你愿意，把你最想逃开的那件事发我一句，我帮你拆到更轻。",
-    buildResourceNudge(matchedResources, "如果你想顺手借一张卡")
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-function buildLocalReply(message, analysis, matchedResources, supportMode) {
-  const mode = normalizeSupportMode(supportMode);
-
-  if (mode === "sort") return buildSortReply(analysis, matchedResources);
-  if (mode === "calm") return buildCalmReply(analysis, matchedResources);
-  if (mode === "plan") return buildPlanReply(message, analysis, matchedResources);
-  return buildListenReply(analysis, matchedResources);
+  if (reply !== lastReply) return reply;
+  if (analysis.key === "positive") return "这份高兴也值得多说两句。如果愿意，可以讲讲当时发生了什么。";
+  return {
+    listen: "刚才提到的事，有没有哪个细节是你还想多说两句的？",
+    sort: "刚才那个问题如果不好答，也可以先说说你已经确定的一点。",
+    calm: "可以先停一会儿。等你想接着说时，再告诉我现在感觉怎么样。",
+    plan: "如果刚才那一步还是有点难，我们可以再缩小一点。是从哪里开始最费劲？"
+  }[mode];
 }
 
 function normalizeAiEndpoint(baseUrl = "") {
@@ -427,7 +400,7 @@ async function createAssistantReply({ message, conversation, siteData, resources
     }
   } catch (error) {
     return {
-      content: buildLocalReply(message, analysis, matchedResources, activeMode),
+      content: buildLocalReply(message, analysis, conversation, activeMode),
       analysis: {
         ...analysis,
         supportMode: activeMode,
@@ -439,7 +412,7 @@ async function createAssistantReply({ message, conversation, siteData, resources
   }
 
   return {
-    content: buildLocalReply(message, analysis, matchedResources, activeMode),
+    content: buildLocalReply(message, analysis, conversation, activeMode),
     analysis: {
       ...analysis,
       supportMode: activeMode,

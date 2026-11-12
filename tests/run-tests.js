@@ -46,6 +46,24 @@ async function run() {
   assert.equal(crisisAnalysis.isCrisis, true);
   assert.equal(crisisAnalysis.label, "危机风险");
   assert.equal(normalizeSupportMode("unknown"), "listen");
+  assert.equal(normalizeSupportMode("constructor"), "listen");
+
+  const moodCases = [
+    ["你好", "neutral"],
+    ["晚上和朋友吃了饭", "neutral"],
+    ["今天挺开心的", "positive"],
+    ["我不开心", "neutral"],
+    ["我没有焦虑，只是有点累", "burnout"],
+    ["我不紧张了，刚刚松了口气", "positive"],
+    ["在积累一些经验", "neutral"],
+    ["我晚上总是睡不着", "insomnia"],
+    ["跟朋友吵架以后一直没说话", "relationship"],
+    ["好多事做不完，脑子很乱", "overwhelm"],
+    ["今天有点难过", "low"]
+  ];
+  for (const [message, key] of moodCases) {
+    assert.equal(analyzeMessage(message, siteData).key, key, message);
+  }
 
   const listenReply = await createAssistantReply({
     message: "我明天考试，现在特别焦虑，完全看不进去。",
@@ -56,7 +74,7 @@ async function run() {
   });
 
   assert.equal(listenReply.analysis.isCrisis, false);
-  assert.match(listenReply.content, /这次我先不急着给办法/);
+  assert.match(listenReply.content, /最担心的是哪一件事/);
   assert.equal(listenReply.matchedResources.length > 0, true);
 
   const planReply = await createAssistantReply({
@@ -67,8 +85,23 @@ async function run() {
     supportMode: "plan"
   });
 
-  assert.match(planReply.content, /今晚不求解决全部/);
+  assert.match(planReply.content, /一个你现在能确认的问题/);
   assert.equal(planReply.analysis.supportMode, "plan");
+
+  const message = "我明天考试，现在有点紧张。";
+  const localReply = (text, supportMode, messages = []) =>
+    createAssistantReply({ message: text, conversation: { messages }, siteData, resources, supportMode });
+  assert.match((await localReply(message, "sort")).content, /已经发生的/);
+  assert.match((await localReply(message, "calm")).content, /脚底/);
+  const first = await localReply(message, "listen");
+  const history = [{ role: "user", content: message }, { role: "assistant", content: first.content }];
+  assert.notEqual((await localReply(message, "listen", history)).content, first.content);
+  const followUp = await localReply("嗯", "listen", [...history, { role: "user", content: "嗯" }]);
+  assert.equal(followUp.analysis.key, "neutral");
+  assert.match(followUp.content, /刚才那件事/);
+  const crisisReply = await localReply("今天本来很开心，但我现在真的不想活了", "plan");
+  assert.equal(crisisReply.analysis.isCrisis, true);
+  assert.match(crisisReply.content, /12356/);
 
   await testPublicPages();
   console.log("All checks passed.");
