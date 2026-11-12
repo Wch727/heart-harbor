@@ -305,6 +305,16 @@ async function callRemoteAi(siteData, conversation, message, analysis, supportMo
     requestBody.thinking = { type: "disabled" };
     requestBody.temperature = 0.6;
   }
+  const hostname = URL.canParse(endpoint) ? new URL(endpoint).hostname : "";
+  const model = ai.model.trim().toLowerCase();
+  if (["api.moonshot.cn", "api.moonshot.ai"].includes(hostname) &&
+      ["kimi-k3.1-pro", "kimi-k3.1-pro-highspeed"].includes(model)) {
+    requestBody.reasoning_effort = "low";
+    requestBody.max_tokens = 2048;
+  }
+  if (hostname === "api.deepseek.com" && ["deepseek-flash", "deepseek-v4-pro"].includes(model)) {
+    requestBody.thinking = { type: "disabled" };
+  }
 
   const response = await fetch(endpoint, {
     method: "POST",

@@ -52,7 +52,7 @@ server.js Node 服务入口
 ## 说明
 
 - 不配置 AI 也能使用，系统会走本地规则回复。
-- 如需接入 Kimi 或其他 OpenAI 兼容接口，可在后台设置中填写 `Base URL`、模型和 `API Key`。
+- 站点默认模型可在后台的「AI 接入配置」修改。也可打开「我的 API」，选择 Kimi K3.1 Pro、DeepSeek Flash 或 DeepSeek V4 Pro 预设，填写对应服务的 API Key，测试后保存到当前浏览器。
 - 情绪签到、陪伴会话、管理员配置和 AI Key 默认都保存在你电脑自己的私有目录，不在项目文件夹里。
 - 如果你把整个项目文件夹打包发给别人，默认不会把这些运行数据一起带走；除非你另外导出了 `%LOCALAPPDATA%\HeartHarbor`。
 - 更详细的使用说明见 [USER_GUIDE.md](USER_GUIDE.md)。

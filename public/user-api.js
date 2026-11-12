@@ -5,14 +5,27 @@ const userApiStatus = document.getElementById("userApiStatus");
 let siteConfig = null;
 const presetMap = {
   moonshot: {
+    label: "Kimi K3.1 Pro",
     baseUrl: "https://api.moonshot.cn/v1",
-    model: "kimi-k2.5"
+    model: "kimi-k3.1-pro"
+  },
+  deepseekFlash: {
+    label: "DeepSeek Flash",
+    baseUrl: "https://api.deepseek.com",
+    model: "deepseek-flash"
+  },
+  deepseekPro: {
+    label: "DeepSeek V4 Pro",
+    baseUrl: "https://api.deepseek.com",
+    model: "deepseek-v4-pro"
   },
   openai: {
+    label: "OpenAI",
     baseUrl: "https://api.openai.com/v1",
     model: "gpt-4.1-mini"
   },
   openrouter: {
+    label: "OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
     model: "openai/gpt-4.1-mini"
   }
@@ -97,10 +110,14 @@ function renderForm(config = null) {
 function applyPreset(presetKey) {
   const preset = presetMap[presetKey];
   if (!preset) return;
-  document.getElementById("userApiBaseUrl").value = preset.baseUrl;
+  const baseUrlInput = document.getElementById("userApiBaseUrl");
+  if (baseUrlInput.value.trim().replace(/\/+$/, "") !== preset.baseUrl) {
+    document.getElementById("userApiKey").value = "";
+  }
+  baseUrlInput.value = preset.baseUrl;
   document.getElementById("userApiModel").value = preset.model;
   document.getElementById("userApiEnabled").checked = true;
-  setInlineStatus(userApiStatus, `已填入 ${presetKey} 预设，补上你的 API Key 后可以直接测试。`, "info");
+  setInlineStatus(userApiStatus, `已填入 ${preset.label}。确认使用这家服务的 API Key 后，就可以测试连接。`, "info");
   renderActiveStatus(getCurrentFormConfig());
 }
 
